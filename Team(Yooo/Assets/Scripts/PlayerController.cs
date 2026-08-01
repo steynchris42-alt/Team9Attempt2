@@ -1,36 +1,42 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
 public class PlayerController : MonoBehaviour
 {
-    //inputStuff
-    private Keyboard keyboard;
-    [SerializeField] private Rigidbody Rigbod;
+    public CharacterController controller;
+    public InputAction move;
+    
+    //directional vectors for WASD movement
+    protected Vector3 MoveForward = new Vector3 (0,0,1);
+    protected Vector3 MoveBackward = new Vector3 (0,0,-1);
+    protected Vector3 MoveLeft = new  Vector3(-1,0,0);
+    protected Vector3 MoveRight = new Vector3(1,0,0);
+    protected Vector3 Motion;
 
-    //Camera Stuff
-    [SerializeField] private float Camx;
-    [SerializeField] private float Camy;
-    [SerializeField] private float Camz;
-
-    //physics stuff
-    private float MoveSpeedBase = 10.0f ;
-    public void Start()
+    //player speed settings
+    protected float MoveSpeed = 5.0f;
+    public void Awake()
     {
-        keyboard = Keyboard.current;
-        Rigbod = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
     }
     public void Update()
     {
-     
+        if (Motion != null)
+        {
+            PlayerMovement();
+        }
     }
     public void PlayerMovement()
     {
-        Vector3 MoveDir = new Vector3(0, 0, 0);
-        Vector3 MoveForce = MoveDir * Time.deltaTime * MoveSpeedBase;
-        Rigbod.AddForce(MoveForce);
+     Motion = MoveForward + MoveBackward + MoveLeft + MoveRight * MoveSpeed * Time.deltaTime;
+      
+    controller.Move(Motion);
+
     }
     public void CameraController()
     {
-
+       
     }
 }
