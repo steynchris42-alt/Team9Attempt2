@@ -1,32 +1,46 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
+using UnityEngine.InputSystem.Controls;
 
 
 public class PlayerController : MonoBehaviour
 {
+    [Header ("MovementRelated")]
     public CharacterController controller;
-  
-    
     //Input actions
     protected Vector2 Movement_Vector;
-
     //player speed settings
     protected float MoveSpeed = 5.0f;
     //Directional vectors
-    Vector3 Forward = Vector3.forward;
-    Vector3 Left = Vector3.left;
+  
     Vector3 Right = Vector3.right;
-    Vector3 Back = Vector3.back;
     Vector3 motion;
+
+    [Header("CameraSTuff")]
+    private Camera Playercam;
+    protected Vector2 LookVector;
+    protected float LookSensitivity = 2.0f;
+    protected float CamX;
+    protected float CamY;
+    protected float VerticleRotation;
+    protected float HorozontalRotation;
+
     public void Awake()
     {
+        Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
+        if (Playercam == null)
+        {
+            Playercam = Camera.main;
+        }
     }
     public void Update()
     {
         MoveLogic();
-     }
+        CameraLogic();
+    }
     
   public void Movement(InputAction.CallbackContext context)
     {
@@ -34,8 +48,24 @@ public class PlayerController : MonoBehaviour
     }
     public void MoveLogic()
     {
-        motion = Movement_Vector.x * Right + Movement_Vector.y * Forward ;
+        motion = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
         CollisionFlags collisionFlags = controller.Move(motion * MoveSpeed * Time.deltaTime);
-        Debug.Log("movementLogicCalled");
+        //Debug.Log("movementLogicCalled");
+    }
+    public void CameraLogic()
+    {
+        CamX = LookVector.x * LookSensitivity;
+        CamY = LookVector.y * LookSensitivity;
+
+       VerticleRotation -= CamY;
+       HorozontalRotation -= -CamX;
+
+       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
+        transform.Rotate(Vector3.up * CamX);
+        Debug.Log("CameraLogicCalled");
+    }
+    public void PlayerLook(InputAction.CallbackContext context)
+    {
+        LookVector = context.ReadValue<Vector2>();
     }
 }
