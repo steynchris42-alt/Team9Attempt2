@@ -6,37 +6,36 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     public CharacterController controller;
-    public InputAction move;
+  
     
-    //directional vectors for WASD movement
-    protected Vector3 MoveForward = new Vector3 (0,0,1);
-    protected Vector3 MoveBackward = new Vector3 (0,0,-1);
-    protected Vector3 MoveLeft = new  Vector3(-1,0,0);
-    protected Vector3 MoveRight = new Vector3(1,0,0);
-    protected Vector3 Motion;
+    //Input actions
+    protected Vector2 Movement_Vector;
 
     //player speed settings
     protected float MoveSpeed = 5.0f;
+    //Directional vectors
+    Vector3 Forward = Vector3.forward;
+    Vector3 Left = Vector3.left;
+    Vector3 Right = Vector3.right;
+    Vector3 Back = Vector3.back;
+    Vector3 motion;
     public void Awake()
     {
         controller = GetComponent<CharacterController>();
     }
     public void Update()
     {
-        if (Motion != null)
-        {
-            PlayerMovement();
-        }
-    }
-    public void PlayerMovement()
+        MoveLogic();
+     }
+    
+  public void Movement(InputAction.CallbackContext context)
     {
-     Motion = MoveForward + MoveBackward + MoveLeft + MoveRight * MoveSpeed * Time.deltaTime;
-      
-    controller.Move(Motion);
-
+        Movement_Vector = context.ReadValue<Vector2>();
     }
-    public void CameraController()
+    public void MoveLogic()
     {
-       
+        motion = Movement_Vector.x * Right + Movement_Vector.y * Forward ;
+        CollisionFlags collisionFlags = controller.Move(motion * MoveSpeed * Time.deltaTime);
+        Debug.Log("movementLogicCalled");
     }
 }
