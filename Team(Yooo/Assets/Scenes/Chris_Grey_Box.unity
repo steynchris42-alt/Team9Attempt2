@@ -36021,7 +36021,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 867099847}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20100194cff6c0e458a0a903c295e7f9, type: 3}
   m_Name: 
@@ -36030,7 +36030,7 @@ MonoBehaviour:
   iEnemyMobilityTypeTracker: 0
   iEnemyHeavyTypeTracker: 0
   Player: {fileID: 170943452}
-  Route1StartingTarget: {fileID: 1922486913}
+  DestinationOutlier: {fileID: 0}
   iWaypointsB1Index: 0
   WayPointsRoute1:
   - {fileID: 2066352273}
@@ -80975,7 +80975,7 @@ GameObject:
   - component: {fileID: 1716806484}
   - component: {fileID: 1716806483}
   m_Layer: 0
-  m_Name: EnemyBasType
+  m_Name: Enemy_BaseType
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81092,7 +81092,7 @@ MonoBehaviour:
   iEnemyMobilityTypeTracker: 0
   iEnemyHeavyTypeTracker: 0
   Player: {fileID: 170943452}
-  Route1StartingTarget: {fileID: 1922486913}
+  DestinationOutlier: {fileID: 1922486913}
   iWaypointsB1Index: 0
   WayPointsRoute1:
   - {fileID: 634123516}
@@ -94118,7 +94118,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1922486913}
   m_Layer: 0
-  m_Name: WayPointSTarting
+  m_Name: DestinationOutlier_
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -94133,7 +94133,7 @@ Transform:
   m_GameObject: {fileID: 1922486912}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 414.69052, y: -0, z: 442.7622}
+  m_LocalPosition: {x: 401.4, y: -0, z: 429.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
