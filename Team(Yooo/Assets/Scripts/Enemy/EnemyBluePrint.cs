@@ -3,34 +3,61 @@ using UnityEngine.AI;
 
 public abstract class EnemyBluePrint : MonoBehaviour
 {
-    [Header ("Enemy config")]
-
     #region INSTANCE FIELDS
-   [Header ("Navmesh Settings")]
+    [Header("NPC Management Settings")]
+    #region NpcManageSettings
+    //FOR TRACKING BASE ENEMY TYPE
+    [SerializeField] protected int iEnemyBaseTypeTracker;
+    virtual protected int iBaseTracker
+    {
+        get { return iEnemyBaseTypeTracker; }
+        set { value = iEnemyBaseTypeTracker; }
+    }
+  //FOR TRACKING MOBILITY ENEMY TYPE
+    [SerializeField] protected int iEnemyMobilityTypeTracker;
+    virtual protected int iMobilityTracker
+    {
+      get { return iEnemyMobilityTypeTracker; }
+      set { value = iEnemyMobilityTypeTracker; }
+    }
+    //FOR TRACKING Heavy ENEMY TYPE
+    [SerializeField] protected int iEnemyHeavyTypeTracker;
+    virtual protected int iHeavyTracker
+    {
+     get { return iEnemyHeavyTypeTracker;}
+     set { value = iEnemyHeavyTypeTracker; }
+    }
+
+    #endregion
+
+    [Header ("Navmesh Settings")]
     #region NavmeshSettings
-    protected NavMeshAgent agent;
+  //TARGETS
     [SerializeField] protected Transform Player;
+    //FOR PATROLLING STATE
+    [SerializeField] protected Transform Route1StartingTarget;
+    [SerializeField] protected int iWaypointsB1Index;
+    [SerializeField] protected Transform[] WayPointsRoute1;
+    protected NavMeshAgent agent;
  #endregion
+
     [Header("Speed Settings")]
- #region SpeedSettingsSLOW
-  [SerializeField] protected float MoveSpeedSlow;
+    #region SpeedSettings
+    //SLOW SPEED
+    [SerializeField] protected float MoveSpeedSlow;
  virtual protected float SpeedSlow
     {
         get { return MoveSpeedSlow; }
         set { MoveSpeedSlow = value; }
     }
-    #endregion
-
- #region SpeedSettingsNORMAL
+    //NORMAL SPEED
     [SerializeField] protected float MoveSpeedNormal;
     virtual protected float SpeedNormal
     {
         get { return MoveSpeedNormal; }
         set { value = MoveSpeedNormal; }
     }
-    #endregion
- 
- #region SpeedSettingsFAST
+    //FAST SPEED
     [SerializeField]protected float MoveSpeedFast;
     virtual protected float SpeedFast
     {
@@ -39,7 +66,7 @@ public abstract class EnemyBluePrint : MonoBehaviour
     }
 
     #endregion
-    #endregion
+ #endregion
 
     #region RUNTIME
     protected void Start()
@@ -48,17 +75,22 @@ public abstract class EnemyBluePrint : MonoBehaviour
     }
     protected virtual void Update()
     {
-        if (agent != null)
+      if (agent != null)
         { 
-            ChasingLogic(); 
+            MovementStateSwitch(); 
         }
     }
     #endregion
 
-    #region METHODS
+   #region METHODS
     #region MovementLogic
+    abstract protected void MovementStateSwitch();
     abstract protected void ChasingLogic();
     abstract protected void PatrollingLogic();
     #endregion
-  #endregion
+
+    #region NpcManagement
+    abstract protected void SpawnLogic();
+    #endregion
+   #endregion
 }
