@@ -1,5 +1,8 @@
+using System;
+using System.Data;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Networking;
 
 public abstract class EnemyBluePrint : MonoBehaviour
 {
@@ -13,33 +16,48 @@ public abstract class EnemyBluePrint : MonoBehaviour
         get { return iEnemyBaseTypeTracker; }
         set { value = iEnemyBaseTypeTracker; }
     }
-  //FOR TRACKING MOBILITY ENEMY TYPE
+    //FOR TRACKING MOBILITY ENEMY TYPE
     [SerializeField] protected int iEnemyMobilityTypeTracker;
     virtual protected int iMobilityTracker
     {
-      get { return iEnemyMobilityTypeTracker; }
-      set { value = iEnemyMobilityTypeTracker; }
+        get { return iEnemyMobilityTypeTracker; }
+        set { value = iEnemyMobilityTypeTracker; }
     }
     //FOR TRACKING Heavy ENEMY TYPE
     [SerializeField] protected int iEnemyHeavyTypeTracker;
     virtual protected int iHeavyTracker
     {
-     get { return iEnemyHeavyTypeTracker;}
-     set { value = iEnemyHeavyTypeTracker; }
+        get { return iEnemyHeavyTypeTracker; }
+        set { value = iEnemyHeavyTypeTracker; }
     }
 
     #endregion
 
-    [Header ("Navmesh Settings")]
+    [Header("Navmesh Settings")]
     #region NavmeshSettings
-  //TARGETS
+    //TARGETS
     [SerializeField] protected Transform Player;
+    protected float DistanceToPlayer;
     //FOR PATROLLING STATE
-    [SerializeField] protected Transform Route1StartingTarget;
+    [SerializeField] protected Transform DestinationOutlier;
     [SerializeField] protected int iWaypointsB1Index;
     [SerializeField] protected Transform[] WayPointsRoute1;
+    //FOR STATE SWITCHING
+    [SerializeField] protected bool IsStateSwitching;
     protected NavMeshAgent agent;
- #endregion
+    protected enum EnemyMoveState_Enum
+    { chasing, patrolling, updating}
+    [SerializeField] protected EnemyMoveState_Enum Move_State;
+    protected EnemyMoveState_Enum enemyMoveState
+    {
+        get { return Move_State; }
+        set {Move_State = value; } 
+    } 
+    
+    
+
+
+    #endregion
 
     [Header("Speed Settings")]
     #region SpeedSettings
@@ -75,18 +93,29 @@ public abstract class EnemyBluePrint : MonoBehaviour
     }
     protected virtual void Update()
     {
-      if (agent != null)
-        { 
-            MovementStateSwitch(); 
+        DistanceToPlayer = Vector3.Distance(Player.position , transform.position);
+        switch (DistanceToPlayer)
+        {
+            case <=100:
+                Move_State = EnemyMoveState_Enum.chasing;
+                ChasingLogic();
+            break;
+            case >= 100:
+               Move_State = EnemyMoveState_Enum.patrolling ;
+                PatrollingLogic();
+            break;
         }
+        MovementStateSwitch(Move_State);
     }
     #endregion
 
-   #region METHODS
+    #region METHODS&BOOLS
     #region MovementLogic
-    abstract protected void MovementStateSwitch();
+    abstract protected void MovementStateSwitch(EnemyMoveState_Enum UpdateState);
     abstract protected void ChasingLogic();
     abstract protected void PatrollingLogic();
+    abstract protected bool IsPatrolling();
+    abstract protected bool IsChasing();
     #endregion
 
     #region NpcManagement
