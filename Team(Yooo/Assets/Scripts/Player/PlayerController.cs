@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     //Input actions
     protected Vector2 Movement_Vector;
     //player speed settings
-    protected float MoveSpeed = 5.0f;
+    [SerializeField] protected float MoveSpeed = 5.0f;
     //Directional vectors
   
     Vector3 Right = Vector3.right;
@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     [Header("CameraSTuff")]
     private Camera Playercam;
     protected Vector2 LookVector;
-    protected float LookSensitivity = 2.0f;
+    protected float LookSensitivity = 0.5f;
     protected float CamX;
     protected float CamY;
     protected float VerticleRotation;
