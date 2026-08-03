@@ -1,4 +1,5 @@
 using Mono.Cecil.Cil;
+using System.Collections;
 using System.Data;
 using UnityEngine;
 
@@ -27,8 +28,10 @@ base.Update();
                 agent.ResetPath();
             break;
             case EnemyMoveState_Enum.AttackMove1:
-                agent.ResetPath();
-            break;
+                StartCoroutine(AttackOne());
+                //agent.ResetPath();
+
+                break;
         }
     }
     protected override void HandleStateSwitches()
@@ -47,17 +50,12 @@ base.Update();
             {
                 StateLogic(EnemyMoveState_Enum.patrolling);
             }
-            PatrollingLogic();
+            PatrollingRandomLogic();
         }
-        if (DistanceToPlayer <= 10)
+        if (agent.pathPending == false && DistanceToPlayer <= 20 && isAttacking == false)
         {
-            if (Move_State != EnemyMoveState_Enum.AttackMove1)
-            {
-                StateLogic(EnemyMoveState_Enum.AttackMove1);
-            }
-            AttackOne();
-        }
-
+               StateLogic(EnemyMoveState_Enum.AttackMove1);
+        }  
     }
 
     #endregion
@@ -67,8 +65,8 @@ base.Update();
     agent.destination = Player.position;
     switch (agent.remainingDistance)
       {
-     case >= 30: agent.speed = MoveSpeedFast; break;
-     case >= 20: agent.speed = MoveSpeedNormal; break;
+     case >= 40: agent.speed = MoveSpeedFast; break;
+     case >= 30: agent.speed = MoveSpeedNormal; break;
      //case > 10: agent.speed = MoveSpeedSlow; break;
       }
     }
@@ -82,15 +80,18 @@ base.Update();
             agent.destination = WayPointsRoute1[iWaypointsB1Index].position;
         }
     }
-
-    protected override bool IsChasing()
+  protected override void PatrollingRandomLogic()
     {
-        throw new System.NotImplementedException();
+        agent.speed = SpeedNormal;
+        if (agent.pathPending == false && agent.remainingDistance <= 2)
+        {
+            iWayPointsRandom = Random.Range (0, WayPointsRandomRoute.Length);
+            agent.destination = WayPointsRandomRoute[iWayPointsRandom].position;
+        }
     }
-    protected override bool IsPatrolling()
-    {
-       throw new System.NotImplementedException();
-    }
+    
+    
+  
     #endregion
  #region NpcManagemnet
     protected override void SpawnLogic()
@@ -100,10 +101,25 @@ base.Update();
 
     #endregion
     #region COMBAT
-    protected override void AttackOne()
+    protected override IEnumerator AttackOne()
     {
-        index_AttackWroute1 = Random.Range(0, WayPointsRoute1.Length); //int now returns a random index value of the Transform array :>
-        agent.destination = WayPointsRoute1[index_AttackWroute1].position; //The destination will be random on each switch, because the randomised int is being used as the index peramater.
+        isAttacking = true;
+        if (isAttacking == true)
+        {
+            index_AttackWroute1 = (index_AttackWroute1 + 1) % WayPoint_AttackRoute1.Length;
+            agent.destination = WayPoint_AttackRoute1[index_AttackWroute1].position;
+        }
+     yield return new WaitForSeconds(10f);
+       isAttacking = false; 
+    }
+    protected override void AttackTwo()
+    {
+         agent.speed = MoveSpeedNormal;
+        if (agent.pathPending == false && agent.remainingDistance <= agent.stoppingDistance)
+        {
+            index_AttackWroute1 = (index_AttackWroute1 + 1) % WayPoint_AttackRoute1.Length;
+            agent.destination = WayPoint_AttackRoute1[index_AttackWroute1].position;
+        }
     }
 
     #endregion

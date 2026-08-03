@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlTypes;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Networking;
@@ -41,7 +44,9 @@ public abstract class EnemyBluePrint : MonoBehaviour
     //FOR PATROLLING STATE
     [SerializeField] protected Transform DestinationOutlier;
     [SerializeField] protected int iWaypointsB1Index;
+    [SerializeField] protected int iWayPointsRandom;
     [SerializeField] protected Transform[] WayPointsRoute1;
+    [SerializeField] protected Transform[] WayPointsRandomRoute;
     protected NavMeshAgent agent;
     protected enum EnemyMoveState_Enum
     { chasing, patrolling, AttackMove1, updating}
@@ -83,6 +88,7 @@ public abstract class EnemyBluePrint : MonoBehaviour
     #region CombatSettings
     [SerializeField] protected Transform[] WayPoint_AttackRoute1;
     [SerializeField] protected int index_AttackWroute1;
+    [SerializeField] protected bool isAttacking;
     
     #endregion
 
@@ -119,14 +125,16 @@ public abstract class EnemyBluePrint : MonoBehaviour
     #region MovementLogic
     abstract protected void ChasingLogic();
     abstract protected void PatrollingLogic();
-    abstract protected bool IsPatrolling();
-    abstract protected bool IsChasing();
+    abstract protected void PatrollingRandomLogic();
+
     #endregion
     #region NpcManagement
     abstract protected void SpawnLogic();
     #endregion
     #region COMBAT
-    abstract protected void AttackOne();
+    abstract protected IEnumerator AttackOne();
+    abstract protected void AttackTwo();
+
     
     #endregion
     #endregion
