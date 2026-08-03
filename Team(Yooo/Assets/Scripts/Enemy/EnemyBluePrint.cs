@@ -42,21 +42,15 @@ public abstract class EnemyBluePrint : MonoBehaviour
     [SerializeField] protected Transform DestinationOutlier;
     [SerializeField] protected int iWaypointsB1Index;
     [SerializeField] protected Transform[] WayPointsRoute1;
-    //FOR STATE SWITCHING
-    [SerializeField] protected bool IsStateSwitching;
     protected NavMeshAgent agent;
     protected enum EnemyMoveState_Enum
-    { chasing, patrolling, updating}
+    { chasing, patrolling, AttackMove1, updating}
     [SerializeField] protected EnemyMoveState_Enum Move_State;
     protected EnemyMoveState_Enum enemyMoveState
     {
         get { return Move_State; }
         set {Move_State = value; } 
     } 
-    
-    
-
-
     #endregion
 
     [Header("Speed Settings")]
@@ -73,18 +67,26 @@ public abstract class EnemyBluePrint : MonoBehaviour
     virtual protected float SpeedNormal
     {
         get { return MoveSpeedNormal; }
-        set { value = MoveSpeedNormal; }
+        set {MoveSpeedNormal = value; }
     }
     //FAST SPEED
     [SerializeField]protected float MoveSpeedFast;
     virtual protected float SpeedFast
     {
         get { return MoveSpeedFast; }
-        set { value = MoveSpeedFast; }
+        set { MoveSpeedFast = value; }
     }
 
     #endregion
- #endregion
+
+    [Header("Combat Settings")]
+    #region CombatSettings
+    [SerializeField] protected Transform[] WayPoint_AttackRoute1;
+    [SerializeField] protected int index_AttackWroute1;
+    
+    #endregion
+
+    #endregion
 
     #region RUNTIME
     protected void Start()
@@ -94,32 +96,38 @@ public abstract class EnemyBluePrint : MonoBehaviour
     protected virtual void Update()
     {
         DistanceToPlayer = Vector3.Distance(Player.position , transform.position);
-        switch (DistanceToPlayer)
+        switch (Move_State)
         {
-            case <=100:
-                Move_State = EnemyMoveState_Enum.chasing;
-                ChasingLogic();
+            case EnemyMoveState_Enum.chasing:
+                HandleStateSwitches();
             break;
-            case >= 100:
-               Move_State = EnemyMoveState_Enum.patrolling ;
-                PatrollingLogic();
+            case EnemyMoveState_Enum.patrolling:
+                HandleStateSwitches();
+            break;
+            case EnemyMoveState_Enum.AttackMove1:
+                HandleStateSwitches();
             break;
         }
-        MovementStateSwitch(Move_State);
     }
     #endregion
 
     #region METHODS&BOOLS
+    #region StateMachine
+    abstract protected void StateLogic(EnemyMoveState_Enum UpdateState);
+    abstract protected void HandleStateSwitches();
+    #endregion
     #region MovementLogic
-    abstract protected void MovementStateSwitch(EnemyMoveState_Enum UpdateState);
     abstract protected void ChasingLogic();
     abstract protected void PatrollingLogic();
     abstract protected bool IsPatrolling();
     abstract protected bool IsChasing();
     #endregion
-
     #region NpcManagement
     abstract protected void SpawnLogic();
     #endregion
-   #endregion
+    #region COMBAT
+    abstract protected void AttackOne();
+    
+    #endregion
+    #endregion
 }
