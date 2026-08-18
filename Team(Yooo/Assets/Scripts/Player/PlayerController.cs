@@ -27,6 +27,9 @@ public class PlayerController : MonoBehaviour
     protected float VerticleRotation;
     protected float HorozontalRotation;
 
+    //RayCasting
+    protected float RayDis = 5.0f;
+   
     public void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -67,5 +70,9 @@ public class PlayerController : MonoBehaviour
     public void PlayerLook(InputAction.CallbackContext context)
     {
         LookVector = context.ReadValue<Vector2>();
+    }
+    public void GroundCheack()
+    {
+        Physics.Raycast(transform.position, Vector3.down, RayDis);
     }
 }

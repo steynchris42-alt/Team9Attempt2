@@ -1,10 +1,16 @@
 using Mono.Cecil.Cil;
 using System.Collections;
 using System.Data;
+using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class EnemyBaseType : EnemyBluePrint
 {
+    public EnemyBaseType()
+    {
+
+    }
  #region RUNTIME
 protected override void Update()
  {
@@ -28,9 +34,11 @@ base.Update();
                 agent.ResetPath();
             break;
             case EnemyMoveState_Enum.AttackMove1:
-                StartCoroutine(AttackOne());
-                //agent.ResetPath();
-
+              
+                agent.ResetPath();
+             break;
+            case EnemyMoveState_Enum.RandomPatroll:
+                agent.ResetPath();
                 break;
         }
     }
@@ -40,22 +48,37 @@ base.Update();
         {
             if (Move_State != EnemyMoveState_Enum.chasing)
             {
-             StateLogic(EnemyMoveState_Enum.chasing);
+                StateLogic(EnemyMoveState_Enum.chasing);
             }
             ChasingLogic();
         }
+        else if (isAttackMoveOne == true && agent.pathPending == false)
+        {
+            if (Move_State != EnemyMoveState_Enum.AttackMove1)
+            {
+              
+                StateLogic(EnemyMoveState_Enum.AttackMove1);
+            }
+            StartCoroutine(AttackOne());
+        }
+        else if (isRandomPatrolling == true && agent.pathPending == false)
+        {
+            if (Move_State != EnemyMoveState_Enum.RandomPatroll)
+            {
+                StateLogic(EnemyMoveState_Enum.RandomPatroll);
+            }
+            PatrollingRandomLogic();
+        }
+ 
         else if (agent.pathPending == false && DistanceToPlayer > 100)
         {
             if (Move_State != EnemyMoveState_Enum.patrolling)
             {
                 StateLogic(EnemyMoveState_Enum.patrolling);
             }
-            PatrollingRandomLogic();
+            PatrollingLogic();
         }
-        if (agent.pathPending == false && DistanceToPlayer <= 20 && isAttacking == false)
-        {
-               StateLogic(EnemyMoveState_Enum.AttackMove1);
-        }  
+    
     }
 
     #endregion
@@ -90,8 +113,6 @@ base.Update();
         }
     }
     
-    
-  
     #endregion
  #region NpcManagemnet
     protected override void SpawnLogic()
@@ -104,22 +125,21 @@ base.Update();
     protected override IEnumerator AttackOne()
     {
         isAttacking = true;
-        if (isAttacking == true)
+        while (isAttacking == true)
         {
-            index_AttackWroute1 = (index_AttackWroute1 + 1) % WayPoint_AttackRoute1.Length;
-            agent.destination = WayPoint_AttackRoute1[index_AttackWroute1].position;
+           // index_AttackWroute1 = (index_AttackWroute1 + 1) % WayPoint_AttackRoute1.Length;
+            agent.destination = WayPoint_AttackRoute1[0].position;
+         yield return new WaitUntil(() => agent.pathPending == false && agent.remainingDistance <= agent.stoppingDistance);
+            agent.destination = WayPoint_AttackRoute1[1].position;
+            yield return new WaitUntil(() => agent.pathPending == false && agent.remainingDistance <= agent.stoppingDistance);
+            yield return new WaitForSeconds(1);
+           
         }
-     yield return new WaitForSeconds(10f);
-       isAttacking = false; 
-    }
+     }
+    // 
     protected override void AttackTwo()
     {
-         agent.speed = MoveSpeedNormal;
-        if (agent.pathPending == false && agent.remainingDistance <= agent.stoppingDistance)
-        {
-            index_AttackWroute1 = (index_AttackWroute1 + 1) % WayPoint_AttackRoute1.Length;
-            agent.destination = WayPoint_AttackRoute1[index_AttackWroute1].position;
-        }
+       throw new System.NotImplementedException();
     }
 
     #endregion
