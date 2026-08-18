@@ -42,14 +42,15 @@ public abstract class EnemyBluePrint : MonoBehaviour
     [SerializeField] protected Transform Player;
     protected float DistanceToPlayer;
     //FOR PATROLLING STATE
-    [SerializeField] protected Transform DestinationOutlier;
     [SerializeField] protected int iWaypointsB1Index;
-    [SerializeField] protected int iWayPointsRandom;
     [SerializeField] protected Transform[] WayPointsRoute1;
+   //FOR RANDOM PATROLLING STATE
     [SerializeField] protected Transform[] WayPointsRandomRoute;
+    [SerializeField] protected bool isRandomPatrolling = false;
+    [SerializeField] protected int iWayPointsRandom;
     protected NavMeshAgent agent;
     protected enum EnemyMoveState_Enum
-    { chasing, patrolling, AttackMove1, updating}
+    { chasing, patrolling, RandomPatroll, AttackMove1, updating}
     [SerializeField] protected EnemyMoveState_Enum Move_State;
     protected EnemyMoveState_Enum enemyMoveState
     {
@@ -88,7 +89,9 @@ public abstract class EnemyBluePrint : MonoBehaviour
     #region CombatSettings
     [SerializeField] protected Transform[] WayPoint_AttackRoute1;
     [SerializeField] protected int index_AttackWroute1;
+    [SerializeField] protected bool isAttackMoveOne;
     [SerializeField] protected bool isAttacking;
+
     
     #endregion
 
@@ -101,6 +104,12 @@ public abstract class EnemyBluePrint : MonoBehaviour
     }
     protected virtual void Update()
     {
+        Debug.Log($"Current Destination: {agent.destination}");
+        if (agent != null && agent.hasPath)
+        {
+            // Draws a red line from the NPC to its target destination
+            Debug.DrawLine(transform.position, agent.destination, Color.red);
+        }
         DistanceToPlayer = Vector3.Distance(Player.position , transform.position);
         switch (Move_State)
         {
@@ -113,6 +122,9 @@ public abstract class EnemyBluePrint : MonoBehaviour
             case EnemyMoveState_Enum.AttackMove1:
                 HandleStateSwitches();
             break;
+            case EnemyMoveState_Enum.RandomPatroll:
+                HandleStateSwitches();
+            break;  
         }
     }
     #endregion
