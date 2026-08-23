@@ -9,14 +9,19 @@ public class PlayerController : MonoBehaviour
 {
     [Header ("MovementRelated")]
     public CharacterController controller;
-    //Input actions
-    protected Vector2 Movement_Vector;
+    //Input actions contexts
+   protected Vector2 Movement_Vector;
+   public bool isSprinting;
+    public bool isShooting;
     //player speed settings
-    [SerializeField] protected float MoveSpeed = 5.0f;
+    [SerializeField] private float MoveSpeed = 5.0f;
+    [SerializeField] private float SprintSpeed = 10.0f;
+    [SerializeField] private float SpeedReset = 5.0f;
+
+
     //Directional vectors
-  
     Vector3 Right = Vector3.right;
-    Vector3 motion;
+    Vector3 motion_Direction;
 
     [Header("CameraSTuff")]
     private Camera Playercam;
@@ -25,7 +30,7 @@ public class PlayerController : MonoBehaviour
 
     protected float CamX;
     protected float CamY;
-    private float Camera_Lock;
+ 
 
     protected float VerticleRotation;
     protected float HorozontalRotation;
@@ -46,17 +51,49 @@ public class PlayerController : MonoBehaviour
     {
         MoveLogic();
         CameraLogic();
+        ShootingLogic();
     }
-    
+    //--Callback Contexts--//
   public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
+    } 
+   public void Sprint (InputAction.CallbackContext context)
+    {
+        isSprinting = context.ReadValueAsButton();
     }
+   public void PlayerLook(InputAction.CallbackContext context)
+    {
+        LookVector = context.ReadValue<Vector2>();
+    }
+   public void Shooting(InputAction.CallbackContext context)
+    {
+        isShooting = context.ReadValueAsButton();
+    }
+    //--Action Logic--//
     public void MoveLogic()
     {
-        motion = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
-        CollisionFlags collisionFlags = controller.Move(motion * MoveSpeed * Time.deltaTime);
-        //Debug.Log("movementLogicCalled");
+        motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
+         controller.Move(motion_Direction * MoveSpeed * Time.deltaTime);
+        SprintLogic();       
+    }
+    public void SprintLogic()
+    {
+        if (isSprinting)
+        {
+            MoveSpeed = SprintSpeed;
+        }
+        else
+        {
+            MoveSpeed = SpeedReset; 
+        }
+    }
+    public void ShootingLogic()
+    {
+        if (isShooting)
+        {
+            Debug.Log("PewPew!");
+        }
     }
     public void CameraLogic()
     {
@@ -70,10 +107,7 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(Vector3.up * CamX);
         Debug.Log("CameraLogicCalled");
     }
-    public void PlayerLook(InputAction.CallbackContext context)
-    {
-        LookVector = context.ReadValue<Vector2>();
-    }
+  
     public void GroundCheack()
     {
         Physics.Raycast(transform.position, Vector3.down, RayDis);
