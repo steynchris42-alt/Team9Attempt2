@@ -8,17 +8,19 @@ using UnityEngine.InputSystem.Controls;
 public class PlayerController : MonoBehaviour
 {
     [Header ("MovementRelated")]
-    public CharacterController controller;
+    [SerializeField] private CharacterController controller;
     //Input actions contexts
-   protected Vector2 Movement_Vector;
-   public bool isSprinting;
-    public bool isShooting;
+   [SerializeField] private Vector2 Movement_Vector;
+    [SerializeField] private bool isSprinting;
     //player speed settings
     [SerializeField] private float MoveSpeed = 5.0f;
     [SerializeField] private float SprintSpeed = 10.0f;
     [SerializeField] private float SpeedReset = 5.0f;
+ //reference to shooting script
+   public Shooting shoot_script_ref;
 
 
+  
     //Directional vectors
     Vector3 Right = Vector3.right;
     Vector3 motion_Direction;
@@ -26,17 +28,14 @@ public class PlayerController : MonoBehaviour
     [Header("CameraSTuff")]
     private Camera Playercam;
     protected Vector2 LookVector;
-    protected float LookSensitivity = 0.5f;
-
-    protected float CamX;
-    protected float CamY;
- 
-
-    protected float VerticleRotation;
-    protected float HorozontalRotation;
+   private float LookSensitivity = 0.5f;
+     private float CamX;
+    private float CamY;
+    private float VerticleRotation;
+    private float HorozontalRotation;
 
     //RayCasting
-    protected float RayDis = 5.0f;
+    [SerializeField] private float RayDis = 5.0f;
    
     public void Awake()
     {
@@ -51,7 +50,7 @@ public class PlayerController : MonoBehaviour
     {
         MoveLogic();
         CameraLogic();
-        ShootingLogic();
+       shoot_script_ref.ShootingLogic();
     }
     //--Callback Contexts--//
   public void Movement(InputAction.CallbackContext context)
@@ -68,7 +67,7 @@ public class PlayerController : MonoBehaviour
     }
    public void Shooting(InputAction.CallbackContext context)
     {
-        isShooting = context.ReadValueAsButton();
+        shoot_script_ref.isShooting = context.ReadValueAsButton();
     }
     //--Action Logic--//
     public void MoveLogic()
@@ -88,13 +87,7 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SpeedReset; 
         }
     }
-    public void ShootingLogic()
-    {
-        if (isShooting)
-        {
-            Debug.Log("PewPew!");
-        }
-    }
+   
     public void CameraLogic()
     {
         CamX = LookVector.x * LookSensitivity;
