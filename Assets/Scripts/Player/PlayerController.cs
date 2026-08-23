@@ -22,8 +22,11 @@ public class PlayerController : MonoBehaviour
     private Camera Playercam;
     protected Vector2 LookVector;
     protected float LookSensitivity = 0.5f;
+
     protected float CamX;
     protected float CamY;
+    private float Camera_Lock;
+
     protected float VerticleRotation;
     protected float HorozontalRotation;
 
@@ -59,11 +62,11 @@ public class PlayerController : MonoBehaviour
     {
         CamX = LookVector.x * LookSensitivity;
         CamY = LookVector.y * LookSensitivity;
-
+        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
        VerticleRotation -= CamY;
        HorozontalRotation -= -CamX;
 
-       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
+       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0,0);
         transform.Rotate(Vector3.up * CamX);
         Debug.Log("CameraLogicCalled");
     }
