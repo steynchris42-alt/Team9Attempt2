@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class EnemyLogicisolstionTes : MonoBehaviour
 {
     /// <summary>
-    /// This Script was created to test and debug different logic aproaches under isolated conditions.
+    /// This script was created to serve as a simpler aproach to NPC navigation.
     /// </summary>
     
     private NavMeshAgent agent;
@@ -25,14 +25,14 @@ public class EnemyLogicisolstionTes : MonoBehaviour
     public Transform[] WayPoint_PatrollingRoute;
     [SerializeField] private int Patrollindex;
 
-    [SerializeField] private Transform AttackPointSolo;
+   
 
     //funkyyy
     [SerializeField]private bool IsAttackReady;
     Func<bool> IsAttackReady_Func ;
 
     //Link to other scripts
-    public PlayerHealth PlayerHealth_Script;
+    //public PlayerHealth PlayerHealth_Script;
 
 
     private Coroutine StateSwitcherCourotine;
@@ -40,6 +40,8 @@ public class EnemyLogicisolstionTes : MonoBehaviour
    #region EnemyAttackingState IEnumerator apraoch
     private void Start()
     {
+        isAttackOne_Gaurd = true;
+        isPatrolling_Gaurd = false;
         agent = GetComponent<NavMeshAgent>();
            // isAttacking = true;
     //conditions for Attack state
@@ -71,6 +73,7 @@ public class EnemyLogicisolstionTes : MonoBehaviour
             Debug.Log("PATROLL");
             yield return new WaitForSeconds(1);
         }
+        agent.ResetPath();
       yield return new WaitForSeconds(1);
     }
 
@@ -102,7 +105,7 @@ private IEnumerator AttackOneLogic()
         agent.isStopped = true;
         if (agent.isStopped == true)
         {
-            PlayerHealth_Script.TakeDamage();
+           // PlayerHealth_Script.TakeDamage();
             Debug.Log("Attacked");
             agent.isStopped = false;
         }
