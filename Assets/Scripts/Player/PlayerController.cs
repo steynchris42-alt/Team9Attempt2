@@ -5,6 +5,7 @@ using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
 
 
+
 public class PlayerController : MonoBehaviour
 {
     [Header ("MovementRelated")]
@@ -12,18 +13,29 @@ public class PlayerController : MonoBehaviour
     //Input actions contexts
    [SerializeField] private Vector2 Movement_Vector;
     [SerializeField] private bool isSprinting;
+ 
     //player speed settings
     [SerializeField] private float MoveSpeed = 5.0f;
     [SerializeField] private float SprintSpeed = 10.0f;
     [SerializeField] private float SpeedReset = 5.0f;
  //reference to shooting script
    public Shooting shoot_script_ref;
-
-
-  
     //Directional vectors
     Vector3 Right = Vector3.right;
     Vector3 motion_Direction;
+
+    [Header("Jump_Settings")]
+    private Rigidbody RigBod;
+
+    private bool isJumping;
+    //raycast setup
+    public LayerMask Ground;
+    public GameObject TheFloor;
+    public bool IsGrounded;
+
+    private float DownForce = -2f;
+    private Vector3 Player_vert;
+    private Vector3 Move_Collab;
 
     [Header("CameraSTuff")]
     private Camera Playercam;
@@ -39,8 +51,9 @@ public class PlayerController : MonoBehaviour
    
     public void Awake()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+
         if (Playercam == null)
         {
             Playercam = Camera.main;
@@ -48,12 +61,17 @@ public class PlayerController : MonoBehaviour
     }
     public void Update()
     {
+       
         MoveLogic();
         CameraLogic();
+        //GroundCheack();
        shoot_script_ref.ShootingLogic();
+        
+        //GroundCheack();
     }
+ 
     //--Callback Contexts--//
-  public void Movement(InputAction.CallbackContext context)
+    public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
     } 
@@ -69,11 +87,27 @@ public class PlayerController : MonoBehaviour
     {
         shoot_script_ref.isShooting = context.ReadValueAsButton();
     }
+    public void Jumping(InputAction.CallbackContext context)
+    {
+        isJumping = context.ReadValueAsButton();
+    }
     //--Action Logic--//
     public void MoveLogic()
     {
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
-         controller.Move(motion_Direction * MoveSpeed * Time.deltaTime);
+        if (controller.isGrounded  == true && Player_vert.y < 0 )
+        {
+            Player_vert.y = DownForce;
+        }
+        else
+        {
+            Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
+        }
+        Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
+        controller.Move(Move_Collab * Time.deltaTime);
+
+
+        
         SprintLogic();       
     }
     public void SprintLogic()
@@ -87,7 +121,11 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SpeedReset; 
         }
     }
+    public void JumpingLogic()
+    {
    
+        
+    }
     public void CameraLogic()
     {
         CamX = LookVector.x * LookSensitivity;
@@ -101,8 +139,5 @@ public class PlayerController : MonoBehaviour
         Debug.Log("CameraLogicCalled");
     }
   
-    public void GroundCheack()
-    {
-        Physics.Raycast(transform.position, Vector3.down, RayDis);
     }
-}
+

@@ -18,8 +18,7 @@ public class Enemy_parent_Class : MonoBehaviour
     //Spawning related
     [SerializeField] protected float RespawnTimer = 5.0f;
     protected float RespawnTimer_reset = 5.0f;
-    public bool IsDead;
-    public bool IsAtSpawn;
+
 
     private Collider collider;
     private MeshRenderer MeshRen;
@@ -28,19 +27,28 @@ public class Enemy_parent_Class : MonoBehaviour
     public Transform[] RespawnLocations;
     public int Respawn_Index;
 
-    [Header("Agent Destinations")]
+    [Header("Agent Pathfinding")]
     public GameObject player;
-
+    protected float Dis_to_Player;
     [SerializeField] protected Transform[] Patrol_route_Random;
     [SerializeField] protected Transform[] Attack_Route;
     [SerializeField] protected int Patrollindex;
     [SerializeField] protected Transform[] WayPoint_PatrollingRoute;
 
-    [Header("Agent Destinations")]
+    [Header("NavMesh related")]
     protected NavMeshAgent agent;
 
+    [Header("STate Tracking")]
+    public bool IsDead;
+    public bool IsAtSpawn;
+    [SerializeField] protected bool isPatrolling;
+    [SerializeField] protected bool isChasing;
+    public bool isSwitch_ToPatrolling;
+    public bool isSwitch_ToChasing;
+    public bool IsStateSwitch_Over;
+    
 
-    public Enemy_RegularType_Child Enemy_Reg;
+   private Enemy_RegularType_Child Enemy_Reg;
 
     public void Start()
     {
@@ -48,10 +56,14 @@ public class Enemy_parent_Class : MonoBehaviour
         MeshRen = GetComponent<MeshRenderer>();
         collider = GetComponent<Collider>();
         agent = GetComponent<NavMeshAgent>();
+        Enemy_Reg = GetComponent<Enemy_RegularType_Child>();
     }
     #region Runtime
     public void Update()
     {
+        Dis_to_Player = Vector3.Distance(transform.position , player.transform.position);
+     
+
         HealthTracker();
         if (Respawning == null && IsDead == true)
         {
@@ -78,13 +90,17 @@ public class Enemy_parent_Class : MonoBehaviour
           yield return null;
           MeshRen.enabled = false;
           collider.enabled = false;
-           agent.isStopped = true;
+          agent.isStopped = true;
+          isChasing = false;
+          isPatrolling = false;
+          Enemy_Reg.State_Tracker_Coro = null;
            MoveToSpawn();
            yield return new WaitForSeconds(5);
            Current_health = Max_health;
            MeshRen.enabled = true;
            collider.enabled = true;
            IsDead = false;
+             
         agent.isStopped = false;
           Respawning = null;
             }
