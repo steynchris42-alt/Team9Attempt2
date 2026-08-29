@@ -40,7 +40,7 @@ public class Enemy_parent_Class : MonoBehaviour
     [Header("NavMesh related")]
     protected NavMeshAgent agent;
 
-    [Header("STate Tracking")]
+    [Header("State Tracking")]
     public bool IsDead;
     public bool IsAtSpawn;
     [SerializeField] protected bool isPatrolling;
@@ -48,9 +48,12 @@ public class Enemy_parent_Class : MonoBehaviour
     public bool isSwitch_ToPatrolling;
     public bool isSwitch_ToChasing;
     public bool IsStateSwitch_Over;
-    
 
+    //References to otherScripts
+    [Header("Other Scripts")]
    private Enemy_RegularType_Child Enemy_Reg;
+   public KillTracker KillTracker_scr;
+  
 
     public void Start()
     {
@@ -67,6 +70,7 @@ public class Enemy_parent_Class : MonoBehaviour
      
 
         HealthTracker();
+        KillTracker_scr.IncreaseCount();
         if (Respawning == null && IsDead == true)
         {
             Respawning = StartCoroutine(CircleOFLife());
@@ -79,10 +83,18 @@ public class Enemy_parent_Class : MonoBehaviour
         Mathf.Clamp(Current_health, Min_health, Max_health);
         if (Current_health <= Min_health)
         {
-            IsAtSpawn = false;
-            IsDead = true;
+            Die();
+
             //StartCoroutine(CircleOFLife());
         }
+    }
+    protected virtual void Die()
+    {
+        IsAtSpawn = false;
+        IsDead = true;
+       
+        KillTracker_scr.isKill = true;
+        KillTracker_scr.isKill = false;
     }
     protected IEnumerator CircleOFLife()
     {
@@ -96,10 +108,11 @@ public class Enemy_parent_Class : MonoBehaviour
           isChasing = false;
           isPatrolling = false;
           Enemy_Reg.State_Tracker_Coro = null;
+     
            MoveToSpawn();
            yield return new WaitForSeconds(5);
-           Current_health = Max_health;
-           MeshRen.enabled = true;
+                Current_health = Max_health;
+                MeshRen.enabled = true;
            collider.enabled = true;
            IsDead = false;
              
