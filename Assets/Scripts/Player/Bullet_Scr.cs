@@ -5,7 +5,7 @@ public class Bullet_Scr : MonoBehaviour
     public GameObject FirePoint;
     public Rigidbody RigBod;
     public ForceMode Bullet_Force;
-    public float Bullet_Speed = 100.0f;
+    public float Bullet_Speed = 500.0f;
     public void Start()
     {
         RigBod = RigBod.GetComponent<Rigidbody>();

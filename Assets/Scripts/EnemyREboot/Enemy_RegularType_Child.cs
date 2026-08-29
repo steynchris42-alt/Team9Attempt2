@@ -9,7 +9,15 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     public GameObject Shank;
     public Transform Shank_base;
   public Coroutine State_Tracker_Coro;
-   
+
+    public Shank shank_Scr;
+    public bool isAttacking;
+    public Func<bool> IsAttackReady_Func;
+    public bool IsAttackReady;
+    public Enemy_Shoot_mech shoot_scr;
+
+
+
 
     //Func bool setup for patrolling coroutine
 
@@ -26,10 +34,11 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         base.Update();
        //Shank.transform.LookAt(player.transform.position);
         Is_StabbingDistance_();
+
         //Assigning specific distances to bools.
         //That way I can use them as conditions for action in my Ineumerators.
 
-
+        shoot_scr.ShootingLogic();
         switch (Dis_to_Player)
         {
             case >= 100.0f:
@@ -70,6 +79,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             State_Tracker_Coro = null;
             if (State_Tracker_Coro == null)
             {
+                isAttacking = true;
                 State_Tracker_Coro = StartCoroutine(AttackPlayer());
             }
         }
@@ -91,7 +101,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             agent.ResetPath();
             yield break;
             }
-            Patrollindex = (Patrollindex + 1) % WayPoint_PatrollingRoute.Length;
+            Patrollindex = UnityEngine.Random.Range(0, WayPoint_PatrollingRoute.Length);
             agent.SetDestination(WayPoint_PatrollingRoute[Patrollindex].position);
 
             yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
@@ -135,10 +145,13 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         while (Is_StabbingDistance_() && isPatrolling == false && IsDead == false)
         {
             agent.isStopped = true;
-          Shank.transform.position = Vector3.Lerp(Shank.transform.position, player.transform.position, 1f * Time.deltaTime);
-            yield return new WaitForSeconds(1);
+            isAttacking = true;
+            shoot_scr.ShootingLogic();
+           // shank_Scr.shank_attack();
+            yield return new WaitForSeconds(5);
+            
         }
-        yield return new WaitForSeconds(0.5f);
+     
         agent.isStopped = false;
     }
 
@@ -153,6 +166,29 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         {
             Debug.Log("isInShankRange TRUE");
             return false;
+        }
+    }
+
+    private IEnumerator AttackOneLogic()
+    {
+        yield return new WaitForSeconds(0.2f);
+        IsAttackReady_Func = () => IsAttackReady;
+        while (isAttacking == true)
+        {
+            agent.SetDestination(WayPoint_AttackRoute1[Attackindex].position);
+            if (!agent.pathPending && agent.remainingDistance <= 2 && IsAttackReady == false)
+            {
+                Attackindex = UnityEngine.Random.Range(0, WayPoint_AttackRoute1.Length);
+                IsAttackReady = true;
+              //  shank_Scr.shank_attack();
+                yield return new WaitUntil(IsAttackReady_Func);
+                IsAttackReady = false;
+            }
+            if (IsAttackReady == true)
+            {
+                agent.ResetPath();
+            }
+            yield return null;
         }
     }
     private IEnumerator StateSwitch()

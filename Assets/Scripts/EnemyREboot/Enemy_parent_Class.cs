@@ -31,7 +31,9 @@ public class Enemy_parent_Class : MonoBehaviour
     public GameObject player;
     protected float Dis_to_Player;
     [SerializeField] protected Transform[] Patrol_route_Random;
-    [SerializeField] protected Transform[] Attack_Route;
+    [SerializeField] protected Transform[] WayPoint_AttackRoute1;
+    [SerializeField]
+    protected int Attackindex;
     [SerializeField] protected int Patrollindex;
     [SerializeField] protected Transform[] WayPoint_PatrollingRoute;
 

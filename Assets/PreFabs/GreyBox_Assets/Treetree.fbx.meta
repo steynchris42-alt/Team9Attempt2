@@ -1,14 +1,25 @@
 fileFormatVersion: 2
-guid: 2c5c1f55b972e3b42b4b7f22cf59af26
+guid: 2f0c33623e040f84cbb2fe584e3d3eb7
 ModelImporter:
-  serializedVersion: 24200
+  serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bARKYbARK
+    second: {fileID: 2100000, guid: 4025ad9b3fcb7f54c90eff0de227824b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lEAFYlEAF.001
+    second: {fileID: 2100000, guid: 4493cdca6c911ac489ae6a3a1d19147f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
+    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -35,7 +46,7 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 1
+    addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
     importPhysicalCameras: 1
