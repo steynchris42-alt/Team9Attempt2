@@ -5,11 +5,14 @@ using UnityEngine.UIElements;
 
 public class Start_Menu : MonoBehaviour
 {
+    
     public UIDocument MainMenu_uidoc;
     public Button Play_Button;
     public Button Exit_Button;
-    public void Awake()
+    public void OnEnable()
     {
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
         if (MainMenu_uidoc == null)
         {
             return;
@@ -28,7 +31,7 @@ public class Start_Menu : MonoBehaviour
     }
     public void Start_Button_Click(ClickEvent click)
     {
-        SceneManager.LoadScene("Small_Town_1");
+        SceneManager.LoadScene("HowToPlay");
     }
     public void Exit_Button_Click(ClickEvent click)
     {

@@ -36,7 +36,7 @@ public class KillTracker : MonoBehaviour
     {
         iKills++;
         TrackerLabel.text = iKills.ToString();
-        if (iKills == 4)
+        if (iKills == 20)
         {
             SceneManager.LoadScene("Victory");
         }

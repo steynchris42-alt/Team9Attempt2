@@ -20,7 +20,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
 
 
     //Func bool setup for patrolling coroutine
-
+    public Func<bool> is_Chasing_del;
 
     public void Start()
     {
@@ -73,7 +73,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             State_Tracker_Coro = StartCoroutine(ChasingLogic());
         }
         
-        if (Is_ShootingDistance_() == true && isChasing == true )
+      /*  if (Is_ShootingDistance_() == true && isChasing == true )
         {
             StopCoroutine(ChasingLogic());
             State_Tracker_Coro = null;
@@ -82,12 +82,12 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
                 isAttacking = true;
                 State_Tracker_Coro = StartCoroutine(AttackPlayer());
             }
-        }
+        }*/
       
     }
     private IEnumerator PatrollRouteLogic()
     {
-      
+        is_Chasing_del = () => isChasing;
         Debug.Log("PATROLL");
       
         while (isPatrolling == true  && IsDead == false)
@@ -101,7 +101,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             agent.SetDestination(WayPoint_PatrollingRoute[Patrollindex].position);
 
             yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
-            && !agent.pathPending);
+            && !agent.pathPending || isChasing);
        
         }
         agent.ResetPath();
@@ -110,11 +110,6 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     }
     private IEnumerator ChasingLogic()
     {
-        if (Is_ShootingDistance_())
-        {
-            State_Tracker_Coro = null;
-            yield break;
-        }
         if (isPatrolling == true)
         {
             agent.ResetPath();
@@ -123,15 +118,25 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         Debug.Log("CHASE");
         while (isChasing == true && isPatrolling == false && IsDead == false)
         {
-         
+
             agent.SetDestination(player.transform.position);
             yield return new WaitForSeconds(0.5f);
-           
-           
+            if (Is_ShootingDistance_())
+            {
+                isAttacking = true;
+                shoot_scr.ShootingLogic();
+            }
+            else if(Is_ShootingDistance_() == false)
+            {
+                isAttacking = false;
+            }
+
+
         }
         agent.ResetPath();
         State_Tracker_Coro = null;
         yield return null;
+        
     }
 
     private IEnumerator AttackPlayer()
@@ -153,7 +158,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
 
     private bool Is_ShootingDistance_()
     {
-        if (Dis_to_Player <= 20.0f)
+        if (Dis_to_Player <= 30.0f)
         {
             agent.isStopped = true;
             Debug.Log("isInShankRange TRUE");

@@ -40,6 +40,7 @@ public class Shooting : MonoBehaviour
     {
         GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
         bullet_Script = Active_Bullet.GetComponent<Bullet_Scr>();
+        Destroy(Active_Bullet, 1.0f);
         if (bullet_Script != null)
         {
             bullet_Script.Fire_Bullet();

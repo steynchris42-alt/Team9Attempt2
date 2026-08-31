@@ -27,7 +27,7 @@ public class Enemy_Shoot_mech : MonoBehaviour
         while (EnemyChild_Scr.isAttacking == true)
         {
             Spawn_Bullet();
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(1f);
           
         }
         Shoot_Cor = null;
@@ -39,7 +39,7 @@ public class Enemy_Shoot_mech : MonoBehaviour
     {
        GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
         Enemy_bullet_Script = Active_Bullet.GetComponent<Enemy_Bullet>();
-        Destroy(Active_Bullet, 2.0f);
+        Destroy(Active_Bullet, 1.0f);
         if (Enemy_bullet_Script != null)
         {
             Enemy_bullet_Script.Fire_Bullet();

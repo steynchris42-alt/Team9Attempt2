@@ -52,7 +52,9 @@ public class PlayerController : MonoBehaviour
     public void Awake()
     {
         controller = GetComponent<CharacterController>();
+        Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
+    
 
         if (Playercam == null)
         {
