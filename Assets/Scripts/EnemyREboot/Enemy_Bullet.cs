@@ -6,7 +6,7 @@ public class Enemy_Bullet : MonoBehaviour
     public GameObject FirePoint;
     public Rigidbody RigBod;
     public ForceMode Bullet_Force;
-    public float Bullet_Speed = 100.0f;
+    public float Bullet_Speed = 1000.0f;
     public void Start()
     {
         RigBod = RigBod.GetComponent<Rigidbody>();
@@ -18,6 +18,7 @@ public class Enemy_Bullet : MonoBehaviour
         {
             RigBod.AddForce(transform.forward * Bullet_Speed, Bullet_Force);
         }
-        Debug.Log("Bullet Fired Enemy");
+        Debug.Log("ENEMY BULLET FIRED");
     }
+
 }

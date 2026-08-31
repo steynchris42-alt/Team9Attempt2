@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +19,7 @@ public class Enemy_parent_Class : MonoBehaviour
     //Spawning related
     [SerializeField] protected float RespawnTimer = 5.0f;
     protected float RespawnTimer_reset = 5.0f;
-
+    public static Action Kill_Event;
 
     private Collider collider;
     private MeshRenderer MeshRen;
@@ -70,7 +71,7 @@ public class Enemy_parent_Class : MonoBehaviour
      
 
         HealthTracker();
-        KillTracker_scr.IncreaseCount();
+    
         if (Respawning == null && IsDead == true)
         {
             Respawning = StartCoroutine(CircleOFLife());
@@ -90,11 +91,11 @@ public class Enemy_parent_Class : MonoBehaviour
     }
     protected virtual void Die()
     {
+        if (IsDead == true) 
+        {return;}
         IsAtSpawn = false;
         IsDead = true;
-       
-        KillTracker_scr.isKill = true;
-        KillTracker_scr.isKill = false;
+        Kill_Event.Invoke();
     }
     protected IEnumerator CircleOFLife()
     {
@@ -130,7 +131,7 @@ public class Enemy_parent_Class : MonoBehaviour
     {
         if (IsAtSpawn == false)
         {
-            Respawn_Index = Random.Range(0, RespawnLocations.Length);
+            Respawn_Index = UnityEngine.Random.Range(0, RespawnLocations.Length);
             transform.position = RespawnLocations[Respawn_Index].position;
             IsAtSpawn = true;
         }

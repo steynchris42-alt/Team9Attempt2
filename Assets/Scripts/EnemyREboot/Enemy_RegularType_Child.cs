@@ -6,15 +6,15 @@ using Unity.VisualScripting;
 
 public class Enemy_RegularType_Child : Enemy_parent_Class
 {
-    public GameObject Shank;
     public Transform Shank_base;
   public Coroutine State_Tracker_Coro;
 
-    public Shank shank_Scr;
     public bool isAttacking;
     public Func<bool> IsAttackReady_Func;
     public bool IsAttackReady;
+
     public Enemy_Shoot_mech shoot_scr;
+
 
 
 
@@ -32,8 +32,8 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     public void Update()
     {
         base.Update();
-       //Shank.transform.LookAt(player.transform.position);
-        Is_StabbingDistance_();
+        shoot_scr.FirePoint.transform.LookAt(player.transform.position);
+        Is_ShootingDistance_();
 
         //Assigning specific distances to bools.
         //That way I can use them as conditions for action in my Ineumerators.
@@ -73,7 +73,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             State_Tracker_Coro = StartCoroutine(ChasingLogic());
         }
         
-        if (Is_StabbingDistance_() == true && isChasing == true )
+        if (Is_ShootingDistance_() == true && isChasing == true )
         {
             StopCoroutine(ChasingLogic());
             State_Tracker_Coro = null;
@@ -83,17 +83,13 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
                 State_Tracker_Coro = StartCoroutine(AttackPlayer());
             }
         }
-       
-        
-        
-       
-        //Debug.Log("I am alive");
+      
     }
     private IEnumerator PatrollRouteLogic()
     {
-       // isSwitch_ToPatrolling= false;
+      
         Debug.Log("PATROLL");
-        // isPatrollDone_func = () => isPatrollingDone; //Assigns the bool value to the delegate
+      
         while (isPatrolling == true  && IsDead == false)
         {
             if (isChasing == true)
@@ -114,7 +110,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     }
     private IEnumerator ChasingLogic()
     {
-        if (Is_StabbingDistance_())
+        if (Is_ShootingDistance_())
         {
             State_Tracker_Coro = null;
             yield break;
@@ -141,29 +137,31 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     private IEnumerator AttackPlayer()
     {
        
-        Debug.Log("GET STABBED ");
-        while (Is_StabbingDistance_() && isPatrolling == false && IsDead == false)
+        while (Is_ShootingDistance_() && isPatrolling == false && IsDead == false)
         {
-            agent.isStopped = true;
+
             isAttacking = true;
             shoot_scr.ShootingLogic();
+            
            // shank_Scr.shank_attack();
             yield return new WaitForSeconds(5);
             
         }
      
-        agent.isStopped = false;
+        //agent.isStopped = false;
     }
 
-    private bool Is_StabbingDistance_()
+    private bool Is_ShootingDistance_()
     {
-        if (Dis_to_Player <= 6.0f)
+        if (Dis_to_Player <= 20.0f)
         {
+            agent.isStopped = true;
             Debug.Log("isInShankRange TRUE");
             return true;
         }
         else
         {
+            agent.isStopped = false;
             Debug.Log("isInShankRange TRUE");
             return false;
         }

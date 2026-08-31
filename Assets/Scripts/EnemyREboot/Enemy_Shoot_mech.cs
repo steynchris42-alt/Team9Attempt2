@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Enemy_Shoot_mech : MonoBehaviour
 {
-    public bool isShooting;
+
     //--//
     public GameObject FirePoint;
     public GameObject Bullet;
@@ -13,10 +13,9 @@ public class Enemy_Shoot_mech : MonoBehaviour
 
     public Coroutine Shoot_Cor;
 
-    //Method for the Player controlelr script
     public void ShootingLogic()
     {
-        if (Shoot_Cor == null)
+        if (Shoot_Cor == null && EnemyChild_Scr.isAttacking == true)
         {
             Shoot_Cor = StartCoroutine(BulletSpawnRate());
         }
@@ -29,7 +28,7 @@ public class Enemy_Shoot_mech : MonoBehaviour
         {
             Spawn_Bullet();
             yield return new WaitForSeconds(0.2f);
-
+          
         }
         Shoot_Cor = null;
         yield return new WaitForSeconds(0.2f);
@@ -38,16 +37,17 @@ public class Enemy_Shoot_mech : MonoBehaviour
     //Instantiatea Active_bullet using 'Bullet' from the bullet script and runs the bullet travel logic
     public void Spawn_Bullet()
     {
-        Debug.Log("bullet should fire");
-        GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
+       GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
         Enemy_bullet_Script = Active_Bullet.GetComponent<Enemy_Bullet>();
+        Destroy(Active_Bullet, 2.0f);
         if (Enemy_bullet_Script != null)
         {
             Enemy_bullet_Script.Fire_Bullet();
 
         }
-
     }
+    
+
 
 }
 
