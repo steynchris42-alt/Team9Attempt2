@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
+using System.Collections;
 
 
 
@@ -13,7 +14,8 @@ public class PlayerController : MonoBehaviour
     //Input actions contexts
    [SerializeField] private Vector2 Movement_Vector;
     [SerializeField] private bool isSprinting;
- 
+
+    [SerializeField] private bool isJumping;
     //player speed settings
     [SerializeField] private float MoveSpeed = 5.0f;
     [SerializeField] private float SprintSpeed = 10.0f;
@@ -21,17 +23,13 @@ public class PlayerController : MonoBehaviour
  //reference to shooting script
    public Shooting shoot_script_ref;
     //Directional vectors
-    Vector3 Right = Vector3.right;
     Vector3 motion_Direction;
 
     [Header("Jump_Settings")]
-    private Rigidbody RigBod;
+   [SerializeField] private float JumpForce = 5.0f;
+    [SerializeField] private float JumpForce_down = -5.0f;
 
-    private bool isJumping;
-    //raycast setup
-    public LayerMask Ground;
-    public GameObject TheFloor;
-    public bool IsGrounded;
+    public Coroutine Mobility_coro;
 
     private float DownForce = -2f;
     private Vector3 Player_vert;
@@ -46,6 +44,9 @@ public class PlayerController : MonoBehaviour
     private float VerticleRotation;
     private float HorozontalRotation;
 
+    //to track controller.isgroudned
+    [SerializeField] private bool isGround_bool;
+
     //RayCasting
     [SerializeField] private float RayDis = 5.0f;
    
@@ -54,7 +55,7 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-    
+        
 
         if (Playercam == null)
         {
@@ -63,7 +64,7 @@ public class PlayerController : MonoBehaviour
     }
     public void Update()
     {
-       
+       isGround_bool = controller.isGrounded;
         MoveLogic();
         CameraLogic();
         //GroundCheack();
@@ -89,7 +90,7 @@ public class PlayerController : MonoBehaviour
     {
         shoot_script_ref.isShooting = context.ReadValueAsButton();
     }
-    public void Jumping(InputAction.CallbackContext context)
+    public void Jump(InputAction.CallbackContext context)
     {
         isJumping = context.ReadValueAsButton();
     }
@@ -97,20 +98,27 @@ public class PlayerController : MonoBehaviour
     public void MoveLogic()
     {
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
-        if (controller.isGrounded  == true && Player_vert.y < 0 )
+        if (controller.isGrounded  == true && Player_vert.y < 0 && isJumping == false)
         {
+            
             Player_vert.y = DownForce;
         }
-        else
+        else if (controller.isGrounded == false && isJumping == false ) 
         {
             Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-
-
         
-        SprintLogic();       
+        if (isJumping == true && Mobility_coro == null && controller.isGrounded == true)
+        {
+            Mobility_coro = StartCoroutine(Jumpyjump());
+        }
+        /*else
+        {
+            StopCoroutine(Jumpyjump());
+        }*/
+        SprintLogic();
     }
     public void SprintLogic()
     {
@@ -123,9 +131,21 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SpeedReset; 
         }
     }
-    public void JumpingLogic()
+    public IEnumerator Jumpyjump()
     {
-   
+        while (isJumping == true && controller.isGrounded == true)
+        {
+            {
+                Debug.Log("jumpy jumpy");
+                Player_vert.y = JumpForce;
+                yield return new WaitForSeconds(1f);
+                Player_vert.y = JumpForce_down;
+            }
+            yield return null;
+            Mobility_coro = null;
+        }
+       
+          
         
     }
     public void CameraLogic()

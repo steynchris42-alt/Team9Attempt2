@@ -86,7 +86,7 @@ public class Enemy_parent_Class : MonoBehaviour
         {
             Die();
 
-            //StartCoroutine(CircleOFLife());
+            StartCoroutine(CircleOFLife());
         }
     }
     protected virtual void Die()

@@ -87,7 +87,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     }
     private IEnumerator PatrollRouteLogic()
     {
-        is_Chasing_del = () => isChasing;
+
         Debug.Log("PATROLL");
       
         while (isPatrolling == true  && IsDead == false)
