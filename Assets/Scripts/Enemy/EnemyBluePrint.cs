@@ -92,7 +92,6 @@ public abstract class EnemyBluePrint : MonoBehaviour
     [SerializeField] protected bool isAttackMoveOne;
     [SerializeField] protected bool isAttacking;
 
-    
     #endregion
 
     #endregion
@@ -107,7 +106,6 @@ public abstract class EnemyBluePrint : MonoBehaviour
         Debug.Log($"Current Destination: {agent.destination}");
         if (agent != null && agent.hasPath)
         {
-            // Draws a red line from the NPC to its target destination
             Debug.DrawLine(transform.position, agent.destination, Color.red);
         }
         DistanceToPlayer = Vector3.Distance(Player.position , transform.position);

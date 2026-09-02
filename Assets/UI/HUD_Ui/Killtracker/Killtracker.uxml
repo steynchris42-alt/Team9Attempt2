@@ -1,0 +1,6 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/HUD_Ui/Killtracker/KillTraacker_Uss.uss?fileID=7433441132597879392&amp;guid=87631cd2993cc2542b71bd3ac1619ed0&amp;type=3#KillTraacker_Uss"/>
+    <ui:VisualElement name="Tracker_Container" style="flex-grow: 1;">
+        <ui:Label text="0&#10;" name="Kill_Label" style="top: 10%; -unity-text-align: upper-center; color: rgb(219, 28, 0);"/>
+    </ui:VisualElement>
+</ui:UXML>
