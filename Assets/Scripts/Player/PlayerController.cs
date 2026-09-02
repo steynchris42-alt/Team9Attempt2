@@ -30,10 +30,14 @@ public class PlayerController : MonoBehaviour
 
      private Vector3 Player_vert;
     private Vector3 Player_horo;
-    private Vector3 Player_Forward;
+    private Vector3 Player_Forward ;
 
     private Vector3 Move_Collab;
     Vector3 motion_Direction;
+   
+    private Vector3 DashMotion;
+    private Vector3 Dash_Collab;
+    private Vector3 Dash_Dir;
 
     [Header("Jump_Settings")]
     //--Jump settings--//
@@ -42,8 +46,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jump_Settings")]
     //--Dash settings--//
-    [SerializeField] private float DashForce = 10.0f;
-    
+    [SerializeField] private float DashForce = 20.0f;
+    public GameObject player;
 
 
     [Header("CameraSTuff")]
@@ -77,10 +81,16 @@ public class PlayerController : MonoBehaviour
     }
     public void Update()
     {
-       isGround_bool = controller.isGrounded;
-        MoveLogic();
-        CameraLogic();
-       shoot_script_ref.ShootingLogic();
+        if (isDashing == true && Mobility_coro == null)
+        {
+            Mobility_coro = StartCoroutine(Dash_Logic());
+        }
+            isGround_bool = controller.isGrounded;
+            MoveLogic();
+            CameraLogic();
+            shoot_script_ref.ShootingLogic();
+        
+
     }
     #endregion
 
@@ -88,6 +98,7 @@ public class PlayerController : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
+   
     } 
    public void Sprint (InputAction.CallbackContext context)
     {
@@ -103,37 +114,37 @@ public class PlayerController : MonoBehaviour
     }
     public void Jump(InputAction.CallbackContext context)
     {
-        isJumping = context.ReadValueAsButton();
+       if (context.started)
+        {
+            Mobility_coro = StartCoroutine(JumpLogic());
+        }
     }
     public void Dash(InputAction.CallbackContext context)
     {
-        isDashing = context.ReadValueAsButton();
+       isDashing = context.ReadValueAsButton();
+            
+            Debug.Log("Dash conetxt");
+        
     }
     #endregion
 
     #region LOGIC
     public void MoveLogic()
     {
+        
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
+        
         if (controller.isGrounded  == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
+          
         }
         else if (controller.isGrounded == false && isJumping == false ) 
         {
             Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
         }
-        Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0) + new Vector3(0,0, Player_Forward.z);
+        Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0)   ;
         controller.Move(Move_Collab * Time.deltaTime);
-        
-        if (isJumping == true && Mobility_coro == null && controller.isGrounded == true)
-        {
-            Mobility_coro = StartCoroutine(Jumpyjump());
-        }
-        if (isDashing && Mobility_coro == null)
-        {
-            Mobility_coro = StartCoroutine(Dash_Logic());
-        }
 
        
         SprintLogic();
@@ -149,34 +160,41 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SpeedReset; 
         }
     }
-    public IEnumerator Jumpyjump()
+
+    public IEnumerator JumpLogic()
     {
-        while (isJumping == true && controller.isGrounded == true)
+        if (Mobility_coro == null && controller.isGrounded == true)
         {
-            {
-                Debug.Log("jumpy jumpy");
-                Player_vert.y = JumpForce;
-                yield return new WaitForSeconds(1f);
-                Player_vert.y = JumpForce_down;
-            }
-            yield return null;
+            Debug.Log("TO TEH SKIEEE");
+            Player_vert.y = JumpForce;
+            yield return new WaitForSeconds(0.5f);
+            Player_vert.y = JumpForce_down;
+            yield return new WaitUntil(() => controller.isGrounded == true);
             Mobility_coro = null;
-        }        
+        }
     }
     public IEnumerator Dash_Logic()
-    { 
-        while (isDashing == true && isDashing_Stop == false && Mobility_coro == null)
-        {
-            {
-                Debug.Log("Dashhhh");
-                Player_Forward.z = DashForce;
-                 yield return new WaitForSeconds(0.1f);
-                Player_Forward.z = 0.0f;
-                isDashing_Stop = true;
-            }
-            yield return null;
+    {
 
-            Mobility_coro = null;
+          Debug.Log("Dashhhh");
+        Dash_Dir = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
+        DashMotion = (DashForce * Time.deltaTime * Dash_Dir);
+        yield return new WaitForSeconds(1);
+        isDashing = false;
+      DashMotion = Vector3.zero;
+        
+        Mobility_coro = null;
+       
+    }
+    public void DashCash()
+    {
+       
+        if (isDashing)
+        {
+            Debug.Log("Dashhhh");
+            DashMotion = new Vector3(Player_Forward.x, 0, Player_Forward.z) * DashForce * Time.deltaTime;
+           // Dash_Collab = DashForce * Time.deltaTime * DashMotion;
+           
         }
     }
 
@@ -195,3 +213,24 @@ public class PlayerController : MonoBehaviour
     #endregion
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///--------------ARCHIVE--------------------------/////////////
+/*
+ * THE OLD JUMP LOGIC
+ *     public IEnumerator Jumpyjump()
+    {
+        while (isJumping == true && controller.isGrounded == true)
+        {
+            {
+                Debug.Log("jumpy jumpy");
+                Player_vert.y = JumpForce;
+                yield return new WaitForSeconds(1f);
+                Player_vert.y = JumpForce_down;
+            }
+            yield return null;
+            Mobility_coro = null;
+        }        
+    }
+Simplified afetr I figured out how context.started works
+
+ */
