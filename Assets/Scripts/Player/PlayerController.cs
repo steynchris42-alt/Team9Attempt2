@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-   [SerializeField] private Vector2 Movement_Vector;
+
    [SerializeField] private bool isSprinting;
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
@@ -30,12 +30,11 @@ public class PlayerController : MonoBehaviour
     //--Physics settings--//
     private float DownForce = -2f;
 
-     private Vector3 Player_vert;
-    private Vector3 Player_horo;
-    private Vector3 Player_Forward ;
-
-    private Vector3 Move_Collab;
+     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
     Vector3 motion_Direction;
+    [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
+    private Vector3 Move_Collab; //The final vector that will act as the parameter to move character controller
+
    
     private Vector3 DashMotion;
     private Vector3 Dash_Collab;
@@ -91,8 +90,6 @@ public class PlayerController : MonoBehaviour
     }
     public void Update()
     {
-
-        
             isGround_bool = controller.isGrounded;
             MoveLogic();
             CameraLogic();
@@ -144,26 +141,18 @@ public class PlayerController : MonoBehaviour
      
             Debug.Log("Dash conetxt");
         }
-   
-       
+
     }
     #endregion
 
     #region LOGIC
-    public void StateSwitch()
-    {
-     
-    
-    }
     public void MoveLogic()
     {
-        
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
         
         if (controller.isGrounded  == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
-          
         }
         else if (controller.isGrounded == false && isJumping == false) 
         {
@@ -230,8 +219,6 @@ public class PlayerController : MonoBehaviour
         Mobility_coro_two = null;
     }
 
-   
-    
     #endregion
     #region CAMERA STUFF
     public void CameraLogic()
