@@ -172,7 +172,7 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SprintSpeed;
             Playercam.fieldOfView = Fov_Max;   
 
-        while (isSprinting  && TimerStart<TimerEnd && controller.isGrounded)
+        while (isSprinting  && TimerStart<TimerEnd)
         {
             TimerStart += Time.deltaTime;
             yield return null;
