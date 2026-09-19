@@ -4,25 +4,20 @@ using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
 using System.Collections;
-using JetBrains.Annotations;
 
-
-
-public class PlayerController : MonoBehaviour
+public class Player_Controller_Child : MonoBehaviour
 {
+
     #region INSTANCE FIELDS
     [Header("MovementRelated")]
 
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-
+    [SerializeField] private Vector2 Movement_Vector;
     [SerializeField] private bool isSprinting;
-    [SerializeField] private bool isStopSprinting;
+   
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
-    private bool isMoving;
-    private bool isRotating_Right;
-
     public Shooting shoot_script_ref;
 
     //--speed settings--//
@@ -33,11 +28,12 @@ public class PlayerController : MonoBehaviour
     //--Physics settings--//
     private float DownForce = -2f;
 
-    private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
-    Vector3 motion_Direction;
-    [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
-    private Vector3 Move_Collab; //The final vector that will act as the parameter to move character controller
+    private Vector3 Player_vert;
+    private Vector3 Player_horo;
+    private Vector3 Player_Forward;
 
+    private Vector3 Move_Collab;
+    Vector3 motion_Direction;
 
     private Vector3 DashMotion;
     private Vector3 Dash_Collab;
@@ -58,7 +54,7 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("CameraSTuff")]
-    public Camera Playercam;
+    private Camera Playercam;
     protected Vector2 LookVector;
     private float LookSensitivity = 0.5f;
     private float CamX;
@@ -69,47 +65,37 @@ public class PlayerController : MonoBehaviour
     private float Fov_Max = 90;
     private float Fov_Min = 80;
 
-    // related to camera effects
-    private float Camera_Shake_Intensity = 0.1f;
-    private float Cam_RotZ;
-    private float Start_Time;
-    private float SmoothStep_Duration = 5.0f;
-    private float t;
-
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     [Header("Coroutine related")]
 
     public Coroutine Mobility_coro;
-    public Coroutine Mobility_coro_two;
-    public Coroutine Camera_Shake_Coro;
     #endregion
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
     #region RUNTIME
     public void Awake()
     {
-        
         controller = GetComponent<CharacterController>();
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
+
+
         if (Playercam == null)
         {
             Playercam = Camera.main;
         }
     }
-    public void Start()
-    {
-        Start_Time = Time.time;
-    }
     public void Update()
     {
-        t = (Time.time - Start_Time) / SmoothStep_Duration;
+        if (isDashing == true)
+        {
+            Mobility_coro = StartCoroutine(Dash_Logic());
+        }
         isGround_bool = controller.isGrounded;
         MoveLogic();
         CameraLogic();
         shoot_script_ref.ShootingLogic();
-        Debug.Log(isMoving == true);
     }
     #endregion
 
@@ -117,28 +103,11 @@ public class PlayerController : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
-        if (context.started)
-        {
-            isMoving = true;
-        }
-        else if (context.canceled)
-        {
-            isMoving = false;
-        }
 
     }
     public void Sprint(InputAction.CallbackContext context)
     {
-        if (context.performed && Mobility_coro == null)
-        {
-            isSprinting = true;
-            Mobility_coro_two = StartCoroutine(Sprinty());
-        }
-        else if (context.canceled)
-        {
-            Debug.Log("stopping sprint context");
-            isSprinting = false;
-        }
+        isSprinting = context.ReadValueAsButton();
     }
     public void PlayerLook(InputAction.CallbackContext context)
     {
@@ -157,12 +126,11 @@ public class PlayerController : MonoBehaviour
     }
     public void Dash(InputAction.CallbackContext context)
     {
-        if (context.performed && Mobility_coro_two == null)
+        if (context.performed && Mobility_coro == null)
         {
             Dash_Dir = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-            isDashing = true;
-            Mobility_coro_two = StartCoroutine(Dash_Logic());
 
+            isDashing = true;
             Debug.Log("Dash conetxt");
         }
 
@@ -172,13 +140,13 @@ public class PlayerController : MonoBehaviour
     #region LOGIC
     public void MoveLogic()
     {
-        
 
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
 
         if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
+
         }
         else if (controller.isGrounded == false && isJumping == false)
         {
@@ -186,34 +154,26 @@ public class PlayerController : MonoBehaviour
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-        if (isMoving == true)
-        {
-            Camera_Shake_Coro = StartCoroutine(Camera_Movement_Response());
-        }
 
 
+        SprintLogic(isSprinting);
     }
 
-    public IEnumerator Sprinty()
+    public void SprintLogic(bool isSprinting)
     {
-        float TimerStart = 0;
-        float TimerEnd = 5;
-
-        Debug.Log("Sprinting Start");
-        MoveSpeed = SprintSpeed;
-        Playercam.fieldOfView = Fov_Max;
-
-        while (isSprinting && TimerStart < TimerEnd)
+        if (isSprinting)
         {
-            TimerStart += Time.deltaTime;
-            yield return null;
-        } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
-
-        MoveSpeed = SpeedReset;
-        Playercam.fieldOfView = Fov_Min;
-        Mobility_coro_two = null;
-
+            MoveSpeed = SprintSpeed;
+            Playercam.fieldOfView = Fov_Max;
+        }
+        else if (!isSprinting)
+        {
+            MoveSpeed = SpeedReset;
+            Playercam.fieldOfView = Fov_Min;
+        }
     }
+
+
     public IEnumerator JumpLogic()
     {
         if (Mobility_coro == null && controller.isGrounded == true)
@@ -226,28 +186,10 @@ public class PlayerController : MonoBehaviour
             Mobility_coro = null;
         }
     }
-    public IEnumerator Camera_Movement_Response()
-    {
-        float timer_start = 0;
-        float timer_end = 3.0f;
-
-      Start_Time = Time.time;
-        while (isMoving )
-        {
-           
-            yield return null;
-        }
-  
-        Camera_Shake_Coro = null;
-    }
-
-
-
-
     public IEnumerator Dash_Logic()
     {
         DashMotion = DashForce * Dash_Dir;
-        while (isDashing)
+        if (isDashing && Mobility_coro == null)
         {
             if (Dash_Event_Timer < Dash_EventEnd_Timer)
             {
@@ -261,14 +203,11 @@ public class PlayerController : MonoBehaviour
                 Playercam.fieldOfView = 80;
                 Dash_Event_Timer = 0.0f;
                 isDashing = false;
-                Debug.Log("Dash stopped");
             }
-            yield return null;
+            yield return new WaitUntil(() => !isDashing);
         }
-        Mobility_coro_two = null;
+        Mobility_coro = null;
     }
-
-
     #endregion
     #region CAMERA STUFF
     public void CameraLogic()
@@ -279,7 +218,7 @@ public class PlayerController : MonoBehaviour
         VerticleRotation -= CamY;
         HorozontalRotation -= -CamX;
 
-        Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, Cam_RotZ);
+        Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
         transform.Rotate(Vector3.up * CamX);
         Debug.Log("CameraLogicCalled");
     }
@@ -332,3 +271,4 @@ Simplified afetr I figured out how context.started works
     }
 
  */
+
