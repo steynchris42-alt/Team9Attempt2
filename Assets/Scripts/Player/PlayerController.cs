@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
-    private bool isMoving;
+    public bool isMoving;
     private bool isRotating_Right;
 
     public Shooting shoot_script_ref;
@@ -73,8 +73,11 @@ public class PlayerController : MonoBehaviour
     private float Camera_Shake_Intensity = 0.1f;
     private float Cam_RotZ;
     private float Start_Time;
-    private float SmoothStep_Duration = 5.0f;
+    private float SmoothStep_Duration = 2.0f;
     private float t;
+
+    [SerializeField] private float SmoothStep_Timer_start = 0;
+     private float SmoothStep_Timer_end = 2.0f;
 
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
@@ -100,16 +103,18 @@ public class PlayerController : MonoBehaviour
     }
     public void Start()
     {
-        Start_Time = Time.time;
+      
     }
     public void Update()
     {
-        t = (Time.time - Start_Time) / SmoothStep_Duration;
+     
         isGround_bool = controller.isGrounded;
         MoveLogic();
+        
         CameraLogic();
         shoot_script_ref.ShootingLogic();
-        Debug.Log(isMoving == true);
+  
+
     }
     #endregion
 
@@ -117,15 +122,17 @@ public class PlayerController : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
-        if (context.started)
+        if (context.performed && Camera_Shake_Coro == null)
         {
             isMoving = true;
+            Camera_Shake_Coro ??= StartCoroutine(Camera_Movement_Response());
         }
-        else if (context.canceled)
+        else if (context.canceled && Camera_Shake_Coro != null)
         {
             isMoving = false;
+            Camera_Shake_Coro = null;
         }
-
+    
     }
     public void Sprint(InputAction.CallbackContext context)
     {
@@ -173,7 +180,6 @@ public class PlayerController : MonoBehaviour
     public void MoveLogic()
     {
         
-
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
 
         if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
@@ -186,10 +192,7 @@ public class PlayerController : MonoBehaviour
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-        if (isMoving == true)
-        {
-            Camera_Shake_Coro = StartCoroutine(Camera_Movement_Response());
-        }
+     
 
 
     }
@@ -228,20 +231,41 @@ public class PlayerController : MonoBehaviour
     }
     public IEnumerator Camera_Movement_Response()
     {
-        float timer_start = 0;
-        float timer_end = 3.0f;
-
-      Start_Time = Time.time;
-        while (isMoving )
+       
+        SmoothStep_Timer_start = 0.0f;
+        while (isMoving)
         {
-           
-            yield return null;
+            t = Mathf.Clamp(SmoothStep_Timer_start / SmoothStep_Duration, 0, 1);
+            if (isRotating_Right)
+            {
+                Cam_RotZ = Mathf.SmoothStep(0, -1, t);
+       
+                Debug.Log("Timer go UPP");
+                SmoothStep_Timer_start += Time.deltaTime;
+
+                if (SmoothStep_Timer_start >= SmoothStep_Timer_end)
+                {
+                    isRotating_Right = false;
+                    //SmoothStep_Timer_start = SmoothStep_Timer_end;
+                }
+            }
+            else if (!isRotating_Right)
+            {
+                Debug.Log("Timer go down");
+                SmoothStep_Timer_start -= Time.deltaTime;
+                if (SmoothStep_Timer_start <= 0.0f)
+                {
+                    isRotating_Right = true;
+                   // SmoothStep_Timer_start = 0.0f;
+                }
+            }
+                yield return null;
+
         }
   
+        Cam_RotZ = 0;
         Camera_Shake_Coro = null;
     }
-
-
 
 
     public IEnumerator Dash_Logic()
