@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
 using System.Collections;
+using JetBrains.Annotations;
 
 
 
@@ -19,6 +20,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
    [SerializeField] private bool isDashing;
+    private bool isMoving;
  
     public Shooting shoot_script_ref;
 
@@ -31,7 +33,7 @@ public class PlayerController : MonoBehaviour
     private float DownForce = -2f;
 
      private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
-    Vector3 motion_Direction;
+    Vector3 motion_Direction; 
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
     private Vector3 Move_Collab; //The final vector that will act as the parameter to move character controller
 
@@ -55,7 +57,7 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("CameraSTuff")]
-    private Camera Playercam;
+    public Camera Playercam;
     protected Vector2 LookVector;
    private float LookSensitivity = 0.5f;
      private float CamX;
@@ -66,12 +68,16 @@ public class PlayerController : MonoBehaviour
     private float Fov_Max = 90;
     private float Fov_Min = 80;
 
+    private float Camera_Shake_Intensity = 0.1f;
+    private float Cam_RotZ;
+
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     [Header("Coroutine related")]
     
     public Coroutine Mobility_coro;
     public Coroutine Mobility_coro_two;
+    public Coroutine Camera_Shake_Coro;
     #endregion
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
@@ -94,6 +100,7 @@ public class PlayerController : MonoBehaviour
             MoveLogic();
             CameraLogic();
             shoot_script_ref.ShootingLogic();
+        Debug.Log(isMoving == true);
     }
     #endregion
 
@@ -101,6 +108,14 @@ public class PlayerController : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
+        if (context.started)
+        {
+       isMoving = true;
+        }
+        else if (context.canceled)
+        {
+            isMoving = false;
+        }
    
     } 
    public void Sprint (InputAction.CallbackContext context)
@@ -160,7 +175,12 @@ public class PlayerController : MonoBehaviour
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0)   ;
         controller.Move(Move_Collab * Time.deltaTime);
-
+       if (isMoving == true)
+        {
+            Camera_Shake_Coro = StartCoroutine(Camera_Movement_Response());
+        }
+    
+     
     }
 
     public IEnumerator Sprinty()
@@ -172,7 +192,7 @@ public class PlayerController : MonoBehaviour
             MoveSpeed = SprintSpeed;
             Playercam.fieldOfView = Fov_Max;   
 
-        while (isSprinting  && TimerStart<TimerEnd && controller.isGrounded)
+        while (isSprinting  && TimerStart<TimerEnd)
         {
             TimerStart += Time.deltaTime;
             yield return null;
@@ -195,6 +215,39 @@ public class PlayerController : MonoBehaviour
             Mobility_coro = null;
         }
     }
+    public IEnumerator Camera_Movement_Response()
+    {
+        bool isRotating_Right;
+
+        while (isMoving)
+        {
+            if (Cam_RotZ <= -2 || Cam_RotZ == 0.0f)
+            {
+                isRotating_Right = true;
+
+                if (isRotating_Right == true)
+                {
+                    Cam_RotZ += Time.deltaTime;
+                    Debug.Log("Rotating right");
+                }
+            }
+            else if (Cam_RotZ >= 2)
+            {
+                isRotating_Right = false;
+                if (isRotating_Right == false)
+                {
+                    Cam_RotZ -= Time.deltaTime;
+                }
+            }
+            yield return null;
+        }
+        Cam_RotZ = 0.0f;
+        Camera_Shake_Coro = null;
+    }
+    
+
+
+
     public IEnumerator Dash_Logic()
     {
         DashMotion = DashForce * Dash_Dir;
@@ -219,6 +272,7 @@ public class PlayerController : MonoBehaviour
         Mobility_coro_two = null;
     }
 
+
     #endregion
     #region CAMERA STUFF
     public void CameraLogic()
@@ -229,7 +283,7 @@ public class PlayerController : MonoBehaviour
        VerticleRotation -= CamY;
        HorozontalRotation -= -CamX;
 
-       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0,0);
+       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, Cam_RotZ);
         transform.Rotate(Vector3.up * CamX);
         Debug.Log("CameraLogicCalled");
     }
