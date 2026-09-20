@@ -7,8 +7,6 @@ using System.Collections;
 using JetBrains.Annotations;
 using Unity.Mathematics;
 
-
-
 public class PlayerController : MonoBehaviour
 {
     #region INSTANCE FIELDS
@@ -16,7 +14,6 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-
     [SerializeField] private bool isSprinting;
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
@@ -32,12 +29,10 @@ public class PlayerController : MonoBehaviour
 
     //--Physics settings--//
     private float DownForce = -2f;
-
     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
     Vector3 motion_Direction;
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
     private Vector3 Move_Collab; //The final vector that will act as the parameter to move character controller
-
 
     private Vector3 DashMotion;
     private Vector3 Dash_Collab;
@@ -45,8 +40,9 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jump_Settings")]
     //--Jump settings--//
-    [SerializeField] private float JumpForce = 5.0f;
-    [SerializeField] private float JumpForce_down = -5.0f;
+    private float JumpForce = 1.0f;
+    [SerializeField] private float JumpHeight = 1.0f;
+    private float JumpForce_down = -5.0f;
 
     [Header("Dash_Settings")]
     //--Dash settings--//
@@ -56,13 +52,14 @@ public class PlayerController : MonoBehaviour
     private float Dash_EventEnd_Timer = 0.1f;
     public GameObject player;
 
-
     [Header("CameraSTuff")]
     // public Camera Playercam;
     public CinemachineCamera Cin_cam;
     protected Vector2 LookVector;
     private float Fov_Max = 90;
     private float Fov_Min = 75;
+    [SerializeField] private float MouseSenseX ;
+    [SerializeField] private float MouseSenseY;
 
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
@@ -160,9 +157,7 @@ public class PlayerController : MonoBehaviour
     #region LOGIC
     public void MoveLogic()
     {
-
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
-
         if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
@@ -200,8 +195,8 @@ public class PlayerController : MonoBehaviour
         if (Mobility_coro == null && controller.isGrounded == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y = JumpForce;
-            yield return new WaitForSeconds(0.5f);
+            Player_vert.y = JumpForce + JumpHeight;
+            yield return new WaitForSeconds(1f);
             Player_vert.y = JumpForce_down;
             yield return new WaitUntil(() => controller.isGrounded == true);
             Mobility_coro = null;
