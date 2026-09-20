@@ -5,6 +5,7 @@ using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
 using System.Collections;
 using JetBrains.Annotations;
+using Unity.Mathematics;
 
 
 
@@ -21,7 +22,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     public bool isMoving;
-    private bool isRotating_Right;
 
     public Shooting shoot_script_ref;
 
@@ -58,26 +58,11 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("CameraSTuff")]
-    public Camera Playercam;
+    // public Camera Playercam;
+    public CinemachineCamera Cin_cam;
     protected Vector2 LookVector;
-    private float LookSensitivity = 0.5f;
-    private float CamX;
-    private float CamY;
-    private float VerticleRotation;
-    private float HorozontalRotation;
-
     private float Fov_Max = 90;
-    private float Fov_Min = 80;
-
-    // related to camera effects
-    private float Camera_Shake_Intensity = 0.1f;
-    private float Cam_RotZ;
-    private float Start_Time;
-    private float SmoothStep_Duration = 2.0f;
-    private float t;
-
-    [SerializeField] private float SmoothStep_Timer_start = 0;
-     private float SmoothStep_Timer_end = 2.0f;
+    private float Fov_Min = 75;
 
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
@@ -92,29 +77,24 @@ public class PlayerController : MonoBehaviour
     #region RUNTIME
     public void Awake()
     {
-        
-        controller = GetComponent<CharacterController>();
+        if (Cin_cam == null) TryGetComponent(out Cin_cam);
+        if (controller == null) TryGetComponent(out controller);
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-        if (Playercam == null)
-        {
-            Playercam = Camera.main;
-        }
     }
-    public void Start()
-    {
-      
-    }
+
     public void Update()
     {
-     
         isGround_bool = controller.isGrounded;
-        MoveLogic();
-        
-        CameraLogic();
-        shoot_script_ref.ShootingLogic();
-  
 
+        MoveLogic();
+        shoot_script_ref.ShootingLogic();
+
+    }
+    public void LateUpdate()
+    {
+        Cin_Camera_Logic();
     }
     #endregion
 
@@ -125,14 +105,14 @@ public class PlayerController : MonoBehaviour
         if (context.performed && Camera_Shake_Coro == null)
         {
             isMoving = true;
-            Camera_Shake_Coro ??= StartCoroutine(Camera_Movement_Response());
+            Camera_Shake_Coro ??= StartCoroutine(Cin_Camera_Effects());
         }
         else if (context.canceled && Camera_Shake_Coro != null)
         {
             isMoving = false;
             Camera_Shake_Coro = null;
         }
-    
+
     }
     public void Sprint(InputAction.CallbackContext context)
     {
@@ -149,7 +129,8 @@ public class PlayerController : MonoBehaviour
     }
     public void PlayerLook(InputAction.CallbackContext context)
     {
-        LookVector = context.ReadValue<Vector2>();
+
+        //  LookVector = context.ReadValue<Vector2>();
     }
     public void Shooting(InputAction.CallbackContext context)
     {
@@ -179,7 +160,7 @@ public class PlayerController : MonoBehaviour
     #region LOGIC
     public void MoveLogic()
     {
-        
+
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
 
         if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
@@ -192,8 +173,6 @@ public class PlayerController : MonoBehaviour
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-     
-
 
     }
 
@@ -204,7 +183,7 @@ public class PlayerController : MonoBehaviour
 
         Debug.Log("Sprinting Start");
         MoveSpeed = SprintSpeed;
-        Playercam.fieldOfView = Fov_Max;
+        //Playercam.fieldOfView = Fov_Max;
 
         while (isSprinting && TimerStart < TimerEnd)
         {
@@ -213,9 +192,8 @@ public class PlayerController : MonoBehaviour
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
 
         MoveSpeed = SpeedReset;
-        Playercam.fieldOfView = Fov_Min;
+        //Playercam.fieldOfView = Fov_Min;
         Mobility_coro_two = null;
-
     }
     public IEnumerator JumpLogic()
     {
@@ -229,44 +207,6 @@ public class PlayerController : MonoBehaviour
             Mobility_coro = null;
         }
     }
-    public IEnumerator Camera_Movement_Response()
-    {
-       
-        SmoothStep_Timer_start = 0.0f;
-        while (isMoving)
-        {
-            t = Mathf.Clamp(SmoothStep_Timer_start / SmoothStep_Duration, 0, 1);
-            if (isRotating_Right)
-            {
-                Cam_RotZ = Mathf.SmoothStep(0, -1, t);
-       
-                Debug.Log("Timer go UPP");
-                SmoothStep_Timer_start += Time.deltaTime;
-
-                if (SmoothStep_Timer_start >= SmoothStep_Timer_end)
-                {
-                    isRotating_Right = false;
-                    //SmoothStep_Timer_start = SmoothStep_Timer_end;
-                }
-            }
-            else if (!isRotating_Right)
-            {
-                Debug.Log("Timer go down");
-                SmoothStep_Timer_start -= Time.deltaTime;
-                if (SmoothStep_Timer_start <= 0.0f)
-                {
-                    isRotating_Right = true;
-                   // SmoothStep_Timer_start = 0.0f;
-                }
-            }
-                yield return null;
-
-        }
-  
-        Cam_RotZ = 0;
-        Camera_Shake_Coro = null;
-    }
-
 
     public IEnumerator Dash_Logic()
     {
@@ -275,14 +215,14 @@ public class PlayerController : MonoBehaviour
         {
             if (Dash_Event_Timer < Dash_EventEnd_Timer)
             {
-                Playercam.fieldOfView = Fov_Max;
+                // Playercam.fieldOfView = Fov_Max;
                 controller.Move(DashMotion * Time.deltaTime);
                 Dash_Event_Timer += Time.deltaTime;
                 Debug.Log("Dashhhh");
             }
             else if (Dash_Event_Timer >= Dash_EventEnd_Timer)
             {
-                Playercam.fieldOfView = 80;
+                //Playercam.fieldOfView = 80;
                 Dash_Event_Timer = 0.0f;
                 isDashing = false;
                 Debug.Log("Dash stopped");
@@ -291,25 +231,37 @@ public class PlayerController : MonoBehaviour
         }
         Mobility_coro_two = null;
     }
-
-
     #endregion
     #region CAMERA STUFF
-    public void CameraLogic()
+
+    public void Cin_Camera_Logic()
     {
-        CamX = LookVector.x * LookSensitivity;
-        CamY = LookVector.y * LookSensitivity;
-        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
-        VerticleRotation -= CamY;
-        HorozontalRotation -= -CamX;
-
-        Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, Cam_RotZ);
-        transform.Rotate(Vector3.up * CamX);
-        Debug.Log("CameraLogicCalled");
+        float CinCamY = Cin_cam.transform.eulerAngles.y;
+        quaternion JoinedRotation = Quaternion.Euler(0, CinCamY, 0);
+        transform.rotation = JoinedRotation;
     }
-
-
-    #endregion
+    public IEnumerator Cin_Camera_Effects()
+    {
+        float Sine_Speed = 2.0f; //Controls interpelation speed
+        float Sine_Mag = 0.5f; //controls size of the sine wave
+        while (isMoving && Cin_cam != null)
+        {
+          Cin_cam.Lens.FieldOfView = Fov_Min;
+          Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
+            if (isSprinting)
+             {
+                Sine_Speed = 6.0f;
+                Cin_cam.Lens.FieldOfView = Fov_Max;
+             }
+          yield return null;
+        }
+        if (Cin_cam != null)
+        {
+          Cin_cam.Lens.Dutch = 0.0f;
+        }
+        Camera_Shake_Coro = null;
+        #endregion
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,6 +305,59 @@ Simplified afetr I figured out how context.started works
                 isDashing = false;
             }
          }
+    }
+
+                    ---Garbage Camera logic---
+
+    public IEnumerator Camera_Movement_Response()
+    {
+        SmoothStep_Timer_start = 0.0f;
+        while (isMoving)
+        {
+            t = Mathf.Clamp(SmoothStep_Timer_start / SmoothStep_Duration, 0, 1);
+            if (isRotating_Right)
+            {
+                Cam_RotZ = Mathf.SmoothStep(0, -1, t);
+
+                Debug.Log("Timer go UPP");
+                SmoothStep_Timer_start += Time.deltaTime;
+
+                if (SmoothStep_Timer_start >= SmoothStep_Timer_end)
+                {
+                    isRotating_Right = false;
+                    //SmoothStep_Timer_start = SmoothStep_Timer_end;
+                }
+            }
+            else if (!isRotating_Right)
+            {
+                Debug.Log("Timer go down");
+                SmoothStep_Timer_start -= Time.deltaTime;
+                if (SmoothStep_Timer_start <= 0.0f)
+                {
+                    isRotating_Right = true;
+                    // SmoothStep_Timer_start = 0.0f;
+                }
+            }
+            yield return null;
+
+        }
+        Cam_RotZ = 0;
+        Camera_Shake_Coro = null;
+
+                            ----THE OLD CAMERA LOGIC----
+NOTE: Code works fine, it was for teh built in unity camera
+    public void CameraLogic()
+    {
+        CamX = LookVector.x * LookSensitivity;
+        CamY = LookVector.y * LookSensitivity;
+        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
+        VerticleRotation -= CamY;
+        HorozontalRotation -= -CamX;
+
+        Cin_cam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
+        transform.Rotate(Vector3.up * CamX);
+        Debug.Log("CameraLogicCalled");
+    }
     }
 
  */
