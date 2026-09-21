@@ -141,13 +141,13 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         if (Dis_to_Player <= 30.0f)
         {
             agent.isStopped = true;
-            Debug.Log("isInShankRange TRUE");
+           // Debug.Log("isInShankRange TRUE");
             return true;
         }
         else
         {
             agent.isStopped = false;
-            Debug.Log("isInShankRange TRUE");
+            //Debug.Log("isInShankRange TRUE");
             return false;
         }
     }

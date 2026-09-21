@@ -31,7 +31,7 @@ public class Enemy_Bullet : MonoBehaviour
     }
     public void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("ENEMY BULLET collision");
+      //  Debug.Log("ENEMY BULLET collision");
         meshRen.enabled = false;
          Enemy_bullet_Destroy_part.Play();
         Destroy(gameObject, 0.5f);

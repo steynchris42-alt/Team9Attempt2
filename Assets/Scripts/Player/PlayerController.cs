@@ -18,8 +18,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
-    public bool isMoving;
+    [SerializeField] private bool isInteracting;
+    public bool isAbleToInteract;//Set in "Interactable_new" script
 
+    public bool isMoving;
     public Shooting shoot_script_ref;
 
     //--speed settings--//
@@ -71,12 +73,14 @@ public class PlayerController : MonoBehaviour
 
     //---Particle effect related--//
     public ParticleSystem MuzzleFlash_part; //enabled in shooting script
-    #endregion
+    
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
+
     //---Camera Shake---/
     float Sine_Speed = 2.0f; //Controls interpelation speed
     float Sine_Mag = 0.5f; //controls size of the sine wave
+            #endregion
     #region RUNTIME
     public void Awake()
     {
@@ -86,7 +90,6 @@ public class PlayerController : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-
     }
 
     public void Update()
@@ -159,6 +162,24 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Dash conetxt");
         }
 
+    }
+    public void Interaction(InputAction.CallbackContext context)
+    {
+        isInteracting = context.ReadValueAsButton();
+        if (context.performed)
+        {
+            if (isAbleToInteract)
+            {
+
+                Debug.Log("you are able inetract");
+            }
+            else
+            {
+                Debug.Log("Unable to inetract");
+            }
+        }
+
+        
     }
     #endregion
 
