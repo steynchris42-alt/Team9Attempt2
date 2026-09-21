@@ -10,10 +10,10 @@ public class Shooting : MonoBehaviour
     public GameObject FirePoint;
   public GameObject Bullet;
     public Bullet_Scr bullet_Script;
-
     public Coroutine Shoot_Cor;
+    //External scripts
+   public PlayerController playerController;
     
-    //Method for the Player controlelr script
     public void ShootingLogic()
     {
         if (isShooting == true && Shoot_Cor == null)
@@ -28,11 +28,14 @@ public class Shooting : MonoBehaviour
         while (isShooting == true)
         {
             Spawn_Bullet();
+            playerController.MuzzleFlash_part.Play();
           yield return new WaitForSeconds(0.2f);
 
         }
+        playerController.MuzzleFlash_part.Clear();
+        playerController.MuzzleFlash_part.Stop();
         Shoot_Cor = null;
-        yield return new WaitForSeconds(0.2f);
+        //yield return new WaitForSeconds(0.2f);
 
     }
     //Instantiatea Active_bullet using 'Bullet' from the bullet script and runs the bullet travel logic
@@ -40,7 +43,7 @@ public class Shooting : MonoBehaviour
     {
         GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
         bullet_Script = Active_Bullet.GetComponent<Bullet_Scr>();
-        Destroy(Active_Bullet, 1.0f);
+        
         if (bullet_Script != null)
         {
             bullet_Script.Fire_Bullet();
@@ -48,5 +51,6 @@ public class Shooting : MonoBehaviour
         }
 
     }
+ 
 
 }

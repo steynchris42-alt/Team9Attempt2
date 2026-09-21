@@ -15,10 +15,6 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
 
     public Enemy_Shoot_mech shoot_scr;
 
-
-
-
-
     //Func bool setup for patrolling coroutine
     public Func<bool> is_Chasing_del;
 
@@ -57,7 +53,6 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
                     
                  }
                  break;
-            
             }
 
 
@@ -73,21 +68,11 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             State_Tracker_Coro = StartCoroutine(ChasingLogic());
         }
         
-      /*  if (Is_ShootingDistance_() == true && isChasing == true )
-        {
-            StopCoroutine(ChasingLogic());
-            State_Tracker_Coro = null;
-            if (State_Tracker_Coro == null)
-            {
-                isAttacking = true;
-                State_Tracker_Coro = StartCoroutine(AttackPlayer());
-            }
-        }*/
+   
       
     }
     private IEnumerator PatrollRouteLogic()
     {
-
         Debug.Log("PATROLL");
       
         while (isPatrolling == true  && IsDead == false)
@@ -118,7 +103,6 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         Debug.Log("CHASE");
         while (isChasing == true && isPatrolling == false && IsDead == false)
         {
-
             agent.SetDestination(player.transform.position);
             yield return new WaitForSeconds(0.5f);
             if (Is_ShootingDistance_())
@@ -130,13 +114,10 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             {
                 isAttacking = false;
             }
-
-
         }
         agent.ResetPath();
         State_Tracker_Coro = null;
-        yield return null;
-        
+        yield return null;    
     }
 
     private IEnumerator AttackPlayer()
@@ -152,7 +133,6 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             yield return new WaitForSeconds(5);
             
         }
-     
         //agent.isStopped = false;
     }
 

@@ -3,7 +3,6 @@ using System.Collections;
 
 public class Enemy_Shoot_mech : MonoBehaviour
 {
-
     //--//
     public GameObject FirePoint;
     public GameObject Bullet;
@@ -39,11 +38,10 @@ public class Enemy_Shoot_mech : MonoBehaviour
     {
        GameObject Active_Bullet = Instantiate(Bullet, FirePoint.transform.position, FirePoint.transform.rotation);
         Enemy_bullet_Script = Active_Bullet.GetComponent<Enemy_Bullet>();
-        Destroy(Active_Bullet, 1.0f);
+  
         if (Enemy_bullet_Script != null)
         {
             Enemy_bullet_Script.Fire_Bullet();
-
         }
     }
     

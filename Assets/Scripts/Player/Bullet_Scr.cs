@@ -6,6 +6,7 @@ public class Bullet_Scr : MonoBehaviour
     public Rigidbody RigBod;
     public ForceMode Bullet_Force;
     public float Bullet_Speed = 500.0f;
+    public ParticleSystem BulletDestroy_particle;
     public void Start()
     {
         RigBod = RigBod.GetComponent<Rigidbody>();
@@ -18,5 +19,14 @@ public class Bullet_Scr : MonoBehaviour
             RigBod.AddForce (transform.forward * Bullet_Speed, Bullet_Force);
         }
         Debug.Log("Bullet Fired");
+    }
+    public void OnCollisionEnter(Collision collision)
+    {
+            Debug.Log("bullet collision");
+       
+            BulletDestroy_particle.Play();
+        
+            Destroy(this.gameObject, 0.5f);
+                   
     }
 }

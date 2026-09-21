@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour
     // public Camera Playercam;
     public CinemachineCamera Cin_cam;
     protected Vector2 LookVector;
-    private float Fov_Max = 90;
+    private float Fov_Max = 80;
     private float Fov_Min = 75;
     [SerializeField] private float MouseSenseX ;
     [SerializeField] private float MouseSenseY;
@@ -64,21 +64,29 @@ public class PlayerController : MonoBehaviour
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     [Header("Coroutine related")]
-
+    //---Coroutines---//
     public Coroutine Mobility_coro;
     public Coroutine Mobility_coro_two;
     public Coroutine Camera_Shake_Coro;
+
+    //---Particle effect related--//
+    public ParticleSystem MuzzleFlash_part; //enabled in shooting script
     #endregion
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
+    //---Camera Shake---/
+    float Sine_Speed = 2.0f; //Controls interpelation speed
+    float Sine_Mag = 0.5f; //controls size of the sine wave
     #region RUNTIME
     public void Awake()
     {
         if (Cin_cam == null) TryGetComponent(out Cin_cam);
         if (controller == null) TryGetComponent(out controller);
+        if(MuzzleFlash_part == null)  GetComponentInChildren<ParticleSystem>();
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
+
     }
 
     public void Update()
@@ -173,21 +181,22 @@ public class PlayerController : MonoBehaviour
 
     public IEnumerator Sprinty()
     {
+
         float TimerStart = 0;
         float TimerEnd = 5;
 
         Debug.Log("Sprinting Start");
         MoveSpeed = SprintSpeed;
-        //Playercam.fieldOfView = Fov_Max;
+
 
         while (isSprinting && TimerStart < TimerEnd)
         {
+            Cin_cam.Lens.FieldOfView = Fov_Max;
             TimerStart += Time.deltaTime;
             yield return null;
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
-
         MoveSpeed = SpeedReset;
-        //Playercam.fieldOfView = Fov_Min;
+        Cin_cam.Lens.FieldOfView = Fov_Min;
         Mobility_coro_two = null;
     }
     public IEnumerator JumpLogic()
@@ -202,7 +211,6 @@ public class PlayerController : MonoBehaviour
             Mobility_coro = null;
         }
     }
-
     public IEnumerator Dash_Logic()
     {
         DashMotion = DashForce * Dash_Dir;
@@ -237,17 +245,12 @@ public class PlayerController : MonoBehaviour
     }
     public IEnumerator Cin_Camera_Effects()
     {
-        float Sine_Speed = 2.0f; //Controls interpelation speed
-        float Sine_Mag = 0.5f; //controls size of the sine wave
+       
         while (isMoving && Cin_cam != null)
         {
-          Cin_cam.Lens.FieldOfView = Fov_Min;
+   
           Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
-            if (isSprinting)
-             {
-                Sine_Speed = 6.0f;
-                Cin_cam.Lens.FieldOfView = Fov_Max;
-             }
+        
           yield return null;
         }
         if (Cin_cam != null)
