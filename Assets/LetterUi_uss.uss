@@ -1,0 +1,13 @@
+:root {
+}
+
+.LetterHeading {
+    left: 40%;
+    top: 7%;
+    justify-content: center;
+}
+
+.LetterBody {
+    top: 36%;
+    left: 41%;
+}

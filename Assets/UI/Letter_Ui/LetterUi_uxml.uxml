@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/LetterUi_uss.uss?fileID=7433441132597879392&amp;guid=76818b00e7e3c224a84ef6e70b794cb2&amp;type=3#LetterUi_uss"/>
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:Label text="Header" name="Heading" class="LetterHeading" style="-unity-text-align: upper-center; font-size: 20px; left: 4%;"/>
+        <ui:Label text="Body" name="BackGround" class="LetterBody" style="-unity-text-align: upper-center; left: 1%;"/>
+    </ui:VisualElement>
+</ui:UXML>
