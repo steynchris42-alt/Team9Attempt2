@@ -1,0 +1,19 @@
+:root {
+}
+
+.LetterHeading {
+    left: 40%;
+    top: 7%;
+    justify-content: center;
+}
+
+.LetterBody {
+    top: 19%;
+    left: 41%;
+    height: 0%;
+    flex-wrap: wrap;
+}
+
+.CloseNote {
+    top: 56%;
+}

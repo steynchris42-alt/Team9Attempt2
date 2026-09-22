@@ -50,28 +50,34 @@ public class Enemy_parent_Class : MonoBehaviour
     public bool isSwitch_ToChasing;
     public bool IsStateSwitch_Over;
 
+    [Header("Particles and Effects")]
+    private ParticleSystem particle;
+
     //References to otherScripts
     [Header("Other Scripts")]
    private Enemy_RegularType_Child Enemy_Reg;
    public KillTracker KillTracker_scr;
-  
 
+    public void Awake()
+    {
+        if (!MeshRen || !collider || !agent || !Enemy_Reg || !particle)
+        {
+            MeshRen = GetComponent<MeshRenderer>();
+            collider = GetComponent<Collider>();
+            agent = GetComponent<NavMeshAgent>();
+            Enemy_Reg = GetComponent<Enemy_RegularType_Child>();
+            particle = GetComponentInChildren<ParticleSystem>();
+        }
+    }
     public void Start()
     {
         Current_health = Max_health;
-        MeshRen = GetComponent<MeshRenderer>();
-        collider = GetComponent<Collider>();
-        agent = GetComponent<NavMeshAgent>();
-        Enemy_Reg = GetComponent<Enemy_RegularType_Child>();
     }
     #region Runtime
     public void Update()
     {
         Dis_to_Player = Vector3.Distance(transform.position , player.transform.position);
-     
-
         HealthTracker();
-    
         if (Respawning == null && IsDead == true)
         {
             Respawning = StartCoroutine(CircleOFLife());
@@ -85,7 +91,6 @@ public class Enemy_parent_Class : MonoBehaviour
         if (Current_health <= Min_health)
         {
             Die();
-
             StartCoroutine(CircleOFLife());
         }
     }
@@ -126,6 +131,7 @@ public class Enemy_parent_Class : MonoBehaviour
     protected virtual void TakeDamage()
     {
         Current_health--;
+        particle.Play();
     }
     public void MoveToSpawn()
     {

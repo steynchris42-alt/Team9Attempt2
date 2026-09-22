@@ -18,8 +18,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
-    public bool isMoving;
+    [SerializeField] private bool isInteracting;
+    public bool isAbleToInteract;//Set in "Interactable_new" script
 
+    public bool isMoving;
     public Shooting shoot_script_ref;
 
     //--speed settings--//
@@ -28,7 +30,7 @@ public class PlayerController : MonoBehaviour
     private float SpeedReset = 5.0f;
 
     //--Physics settings--//
-    private float DownForce = -2f;
+    private float DownForce = -3f;
     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
     Vector3 motion_Direction;
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
@@ -56,7 +58,7 @@ public class PlayerController : MonoBehaviour
     // public Camera Playercam;
     public CinemachineCamera Cin_cam;
     protected Vector2 LookVector;
-    private float Fov_Max = 90;
+    private float Fov_Max = 80;
     private float Fov_Min = 75;
     [SerializeField] private float MouseSenseX ;
     [SerializeField] private float MouseSenseY;
@@ -64,21 +66,39 @@ public class PlayerController : MonoBehaviour
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     [Header("Coroutine related")]
-
+    //---Coroutines---//
     public Coroutine Mobility_coro;
     public Coroutine Mobility_coro_two;
     public Coroutine Camera_Shake_Coro;
-    #endregion
+
+    //---Particle effect related--//
+    public ParticleSystem MuzzleFlash_part; //enabled in shooting script
+    
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
+
+    //---Camera Shake---/
+    float Sine_Speed = 2.0f; //Controls interpelation speed
+    float Sine_Mag = 0.5f; //controls size of the sine wave
+
+    //---UI stuff--//
+   public Notes_Popup  NotesUI;
+    public Interactable_new Interact_Scr;
+    //public Transform[] Notes;
+    public Interactable_Tracker Interact_Tracker;
+    private float DisToNotes;
+            #endregion
+
     #region RUNTIME
     public void Awake()
     {
         if (Cin_cam == null) TryGetComponent(out Cin_cam);
         if (controller == null) TryGetComponent(out controller);
+        if(MuzzleFlash_part == null)  GetComponentInChildren<ParticleSystem>();
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
+        NotesUI.Hide_Notes();
     }
 
     public void Update()
@@ -87,6 +107,22 @@ public class PlayerController : MonoBehaviour
 
         MoveLogic();
         shoot_script_ref.ShootingLogic();
+      /*  foreach (Transform t in Notes)
+        {
+            DisToNotes = Vector3.Distance(transform.position, t.position);
+            if (DisToNotes <= 5.0f)
+            {
+                isAbleToInteract = true;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Show_Interact_Prompt();
+            }
+            else if (DisToNotes > 5.0f)
+            {
+                isAbleToInteract = false;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Inactive; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Hide_Interact_Prompt();
+            } 
+        } */
 
     }
     public void LateUpdate()
@@ -152,6 +188,27 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+    public void Interaction(InputAction.CallbackContext context)
+    {
+        isInteracting = context.ReadValueAsButton();
+        if (context.performed)
+        {
+            if (isAbleToInteract)
+            {
+                if (Interact_Tracker != null)
+                {
+                    NotesUI.Show_Notes(Interact_Tracker);
+
+                    Debug.Log("you are able inetract");
+                }
+            }
+            else
+            {
+                NotesUI.Hide_Notes();
+                Debug.Log("Unable to inetract");
+            }
+        }
+    }
     #endregion
 
     #region LOGIC
@@ -173,21 +230,23 @@ public class PlayerController : MonoBehaviour
 
     public IEnumerator Sprinty()
     {
+
         float TimerStart = 0;
         float TimerEnd = 5;
 
         Debug.Log("Sprinting Start");
         MoveSpeed = SprintSpeed;
-        //Playercam.fieldOfView = Fov_Max;
+
 
         while (isSprinting && TimerStart < TimerEnd)
         {
+            Cin_cam.Lens.FieldOfView = Fov_Max;
             TimerStart += Time.deltaTime;
             yield return null;
+            Sine_Speed = 4.0f;
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
-
         MoveSpeed = SpeedReset;
-        //Playercam.fieldOfView = Fov_Min;
+        Cin_cam.Lens.FieldOfView = Fov_Min;
         Mobility_coro_two = null;
     }
     public IEnumerator JumpLogic()
@@ -195,14 +254,13 @@ public class PlayerController : MonoBehaviour
         if (Mobility_coro == null && controller.isGrounded == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y = JumpForce + JumpHeight;
-            yield return new WaitForSeconds(1f);
-            Player_vert.y = JumpForce_down;
+            Player_vert.y = (JumpForce + JumpHeight) * 2;
+            yield return new WaitForSeconds(0.5f);
+            Player_vert.y = JumpForce_down * 2;
             yield return new WaitUntil(() => controller.isGrounded == true);
             Mobility_coro = null;
         }
     }
-
     public IEnumerator Dash_Logic()
     {
         DashMotion = DashForce * Dash_Dir;
@@ -237,17 +295,12 @@ public class PlayerController : MonoBehaviour
     }
     public IEnumerator Cin_Camera_Effects()
     {
-        float Sine_Speed = 2.0f; //Controls interpelation speed
-        float Sine_Mag = 0.5f; //controls size of the sine wave
+       
         while (isMoving && Cin_cam != null)
         {
-          Cin_cam.Lens.FieldOfView = Fov_Min;
+   
           Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
-            if (isSprinting)
-             {
-                Sine_Speed = 6.0f;
-                Cin_cam.Lens.FieldOfView = Fov_Max;
-             }
+        
           yield return null;
         }
         if (Cin_cam != null)
