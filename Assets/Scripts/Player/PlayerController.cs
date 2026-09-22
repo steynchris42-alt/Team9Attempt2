@@ -5,102 +5,129 @@ using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
 using System.Collections;
 using JetBrains.Annotations;
-
-
+using Unity.Mathematics;
 
 public class PlayerController : MonoBehaviour
 {
     #region INSTANCE FIELDS
-    [Header ("MovementRelated")]
+    [Header("MovementRelated")]
 
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-
-   [SerializeField] private bool isSprinting;
+    [SerializeField] private bool isSprinting;
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
-   [SerializeField] private bool isDashing;
-    private bool isMoving;
- 
+    [SerializeField] private bool isDashing;
+    [SerializeField] private bool isInteracting;
+    public bool isAbleToInteract;//Set in "Interactable_new" script
+
+    public bool isMoving;
     public Shooting shoot_script_ref;
 
     //--speed settings--//
     [SerializeField] private float MoveSpeed = 5.0f;
     [SerializeField] private float SprintSpeed = 10.0f;
-   private float SpeedReset = 5.0f;
+    private float SpeedReset = 5.0f;
 
     //--Physics settings--//
-    private float DownForce = -2f;
-
-     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
-    Vector3 motion_Direction; 
+    private float DownForce = -3f;
+    private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
+    Vector3 motion_Direction;
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
     private Vector3 Move_Collab; //The final vector that will act as the parameter to move character controller
 
-   
     private Vector3 DashMotion;
     private Vector3 Dash_Collab;
     private Vector3 Dash_Dir;
 
     [Header("Jump_Settings")]
     //--Jump settings--//
-    [SerializeField] private float JumpForce = 5.0f;
-    [SerializeField] private float JumpForce_down = -5.0f;
+    private float JumpForce = 1.0f;
+    [SerializeField] private float JumpHeight = 1.0f;
+    private float JumpForce_down = -5.0f;
 
     [Header("Dash_Settings")]
     //--Dash settings--//
-     private float DashForce = 100.0f;
+    private float DashForce = 100.0f;
 
-   private float Dash_Event_Timer = 0f;
+    private float Dash_Event_Timer = 0f;
     private float Dash_EventEnd_Timer = 0.1f;
     public GameObject player;
 
-
     [Header("CameraSTuff")]
-    public Camera Playercam;
+    // public Camera Playercam;
+    public CinemachineCamera Cin_cam;
     protected Vector2 LookVector;
-   private float LookSensitivity = 0.5f;
-     private float CamX;
-    private float CamY;
-    private float VerticleRotation;
-    private float HorozontalRotation;
-
-    private float Fov_Max = 90;
-    private float Fov_Min = 80;
-
-    private float Camera_Shake_Intensity = 0.1f;
-    private float Cam_RotZ;
+    private float Fov_Max = 80;
+    private float Fov_Min = 75;
+    [SerializeField] private float MouseSenseX ;
+    [SerializeField] private float MouseSenseY;
 
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     [Header("Coroutine related")]
-    
+    //---Coroutines---//
     public Coroutine Mobility_coro;
     public Coroutine Mobility_coro_two;
     public Coroutine Camera_Shake_Coro;
-    #endregion
+
+    //---Particle effect related--//
+    public ParticleSystem MuzzleFlash_part; //enabled in shooting script
+    
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
+
+    //---Camera Shake---/
+    float Sine_Speed = 2.0f; //Controls interpelation speed
+    float Sine_Mag = 0.5f; //controls size of the sine wave
+
+    //---UI stuff--//
+   public Notes_Popup  NotesUI;
+    public Interactable_new Interact_Scr;
+    //public Transform[] Notes;
+    public Interactable_Tracker Interact_Tracker;
+    private float DisToNotes;
+            #endregion
+
     #region RUNTIME
     public void Awake()
     {
-        controller = GetComponent<CharacterController>();
+        if (Cin_cam == null) TryGetComponent(out Cin_cam);
+        if (controller == null) TryGetComponent(out controller);
+        if(MuzzleFlash_part == null)  GetComponentInChildren<ParticleSystem>();
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-        
-
-        if (Playercam == null)
-        {
-            Playercam = Camera.main;
-        }
+        NotesUI.Hide_Notes();
     }
+
     public void Update()
     {
-            isGround_bool = controller.isGrounded;
-            MoveLogic();
-            CameraLogic();
-            shoot_script_ref.ShootingLogic();
-        Debug.Log(isMoving == true);
+        isGround_bool = controller.isGrounded;
+
+        MoveLogic();
+        shoot_script_ref.ShootingLogic();
+      /*  foreach (Transform t in Notes)
+        {
+            DisToNotes = Vector3.Distance(transform.position, t.position);
+            if (DisToNotes <= 5.0f)
+            {
+                isAbleToInteract = true;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Show_Interact_Prompt();
+            }
+            else if (DisToNotes > 5.0f)
+            {
+                isAbleToInteract = false;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Inactive; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Hide_Interact_Prompt();
+            } 
+        } */
+
+    }
+    public void LateUpdate()
+    {
+        Cin_Camera_Logic();
     }
     #endregion
 
@@ -108,40 +135,43 @@ public class PlayerController : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
-        if (context.started)
+        if (context.performed && Camera_Shake_Coro == null)
         {
-       isMoving = true;
+            isMoving = true;
+            Camera_Shake_Coro ??= StartCoroutine(Cin_Camera_Effects());
         }
-        else if (context.canceled)
+        else if (context.canceled && Camera_Shake_Coro != null)
         {
             isMoving = false;
+            Camera_Shake_Coro = null;
         }
-   
-    } 
-   public void Sprint (InputAction.CallbackContext context)
+
+    }
+    public void Sprint(InputAction.CallbackContext context)
     {
-        if(context.performed && Mobility_coro == null)
+        if (context.performed && Mobility_coro == null)
         {
             isSprinting = true;
             Mobility_coro_two = StartCoroutine(Sprinty());
         }
-        else if (context.canceled )
+        else if (context.canceled)
         {
             Debug.Log("stopping sprint context");
-            isSprinting=false;
+            isSprinting = false;
         }
     }
-   public void PlayerLook(InputAction.CallbackContext context)
+    public void PlayerLook(InputAction.CallbackContext context)
     {
-        LookVector = context.ReadValue<Vector2>();
+
+        //  LookVector = context.ReadValue<Vector2>();
     }
-   public void Shooting(InputAction.CallbackContext context)
+    public void Shooting(InputAction.CallbackContext context)
     {
         shoot_script_ref.isShooting = context.ReadValueAsButton();
     }
     public void Jump(InputAction.CallbackContext context)
     {
-       if (context.performed)
+        if (context.performed)
         {
             Mobility_coro = StartCoroutine(JumpLogic());
         }
@@ -152,144 +182,134 @@ public class PlayerController : MonoBehaviour
         {
             Dash_Dir = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
             isDashing = true;
-         Mobility_coro_two = StartCoroutine(Dash_Logic());
-     
+            Mobility_coro_two = StartCoroutine(Dash_Logic());
+
             Debug.Log("Dash conetxt");
         }
 
+    }
+    public void Interaction(InputAction.CallbackContext context)
+    {
+        isInteracting = context.ReadValueAsButton();
+        if (context.performed)
+        {
+            if (isAbleToInteract)
+            {
+                if (Interact_Tracker != null)
+                {
+                    NotesUI.Show_Notes(Interact_Tracker);
+
+                    Debug.Log("you are able inetract");
+                }
+            }
+            else
+            {
+                NotesUI.Hide_Notes();
+                Debug.Log("Unable to inetract");
+            }
+        }
     }
     #endregion
 
     #region LOGIC
     public void MoveLogic()
     {
-        motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward ;
-        
-        if (controller.isGrounded  == true && Player_vert.y < 0 && isJumping == false)
+        motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
+        if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
         }
-        else if (controller.isGrounded == false && isJumping == false) 
+        else if (controller.isGrounded == false && isJumping == false)
         {
             Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
         }
-        Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0)   ;
+        Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-       if (isMoving == true)
-        {
-            Camera_Shake_Coro = StartCoroutine(Camera_Movement_Response());
-        }
-    
-     
+
     }
 
     public IEnumerator Sprinty()
     {
+
         float TimerStart = 0;
         float TimerEnd = 5;
-       
-            Debug.Log("Sprinting Start");
-            MoveSpeed = SprintSpeed;
-            Playercam.fieldOfView = Fov_Max;   
 
-        while (isSprinting  && TimerStart<TimerEnd)
+        Debug.Log("Sprinting Start");
+        MoveSpeed = SprintSpeed;
+
+
+        while (isSprinting && TimerStart < TimerEnd)
         {
+            Cin_cam.Lens.FieldOfView = Fov_Max;
             TimerStart += Time.deltaTime;
             yield return null;
+            Sine_Speed = 4.0f;
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
-
         MoveSpeed = SpeedReset;
-        Playercam.fieldOfView = Fov_Min;
+        Cin_cam.Lens.FieldOfView = Fov_Min;
         Mobility_coro_two = null;
-
     }
     public IEnumerator JumpLogic()
     {
         if (Mobility_coro == null && controller.isGrounded == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y = JumpForce;
+            Player_vert.y = (JumpForce + JumpHeight) * 2;
             yield return new WaitForSeconds(0.5f);
-            Player_vert.y = JumpForce_down;
+            Player_vert.y = JumpForce_down * 2;
             yield return new WaitUntil(() => controller.isGrounded == true);
             Mobility_coro = null;
         }
     }
-    public IEnumerator Camera_Movement_Response()
-    {
-        bool isRotating_Right;
-
-        while (isMoving)
-        {
-            if (Cam_RotZ <= -2 || Cam_RotZ == 0.0f)
-            {
-                isRotating_Right = true;
-
-                if (isRotating_Right == true)
-                {
-                    Cam_RotZ += Time.deltaTime;
-                    Debug.Log("Rotating right");
-                }
-            }
-            else if (Cam_RotZ >= 2)
-            {
-                isRotating_Right = false;
-                if (isRotating_Right == false)
-                {
-                    Cam_RotZ -= Time.deltaTime;
-                }
-            }
-            yield return null;
-        }
-        Cam_RotZ = 0.0f;
-        Camera_Shake_Coro = null;
-    }
-    
-
-
-
     public IEnumerator Dash_Logic()
     {
         DashMotion = DashForce * Dash_Dir;
         while (isDashing)
         {
-             if (Dash_Event_Timer < Dash_EventEnd_Timer)
-                {
-                   Playercam.fieldOfView = Fov_Max;
-                  controller.Move(DashMotion * Time.deltaTime);
+            if (Dash_Event_Timer < Dash_EventEnd_Timer)
+            {
+                // Playercam.fieldOfView = Fov_Max;
+                controller.Move(DashMotion * Time.deltaTime);
                 Dash_Event_Timer += Time.deltaTime;
-                    Debug.Log("Dashhhh");
-                }
-                else if (Dash_Event_Timer >= Dash_EventEnd_Timer)
-                {
-                    Playercam.fieldOfView = 80;
-                    Dash_Event_Timer = 0.0f;
-                    isDashing = false;
-                Debug.Log("Dash stopped");
-                }
-                yield return null;
+                Debug.Log("Dashhhh");
             }
+            else if (Dash_Event_Timer >= Dash_EventEnd_Timer)
+            {
+                //Playercam.fieldOfView = 80;
+                Dash_Event_Timer = 0.0f;
+                isDashing = false;
+                Debug.Log("Dash stopped");
+            }
+            yield return null;
+        }
         Mobility_coro_two = null;
     }
-
-
     #endregion
     #region CAMERA STUFF
-    public void CameraLogic()
+
+    public void Cin_Camera_Logic()
     {
-        CamX = LookVector.x * LookSensitivity;
-        CamY = LookVector.y * LookSensitivity;
-        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
-       VerticleRotation -= CamY;
-       HorozontalRotation -= -CamX;
-
-       Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, Cam_RotZ);
-        transform.Rotate(Vector3.up * CamX);
-        Debug.Log("CameraLogicCalled");
+        float CinCamY = Cin_cam.transform.eulerAngles.y;
+        quaternion JoinedRotation = Quaternion.Euler(0, CinCamY, 0);
+        transform.rotation = JoinedRotation;
     }
-
-    
-    #endregion
+    public IEnumerator Cin_Camera_Effects()
+    {
+       
+        while (isMoving && Cin_cam != null)
+        {
+   
+          Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
+        
+          yield return null;
+        }
+        if (Cin_cam != null)
+        {
+          Cin_cam.Lens.Dutch = 0.0f;
+        }
+        Camera_Shake_Coro = null;
+        #endregion
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -333,6 +353,59 @@ Simplified afetr I figured out how context.started works
                 isDashing = false;
             }
          }
+    }
+
+                    ---Garbage Camera logic---
+
+    public IEnumerator Camera_Movement_Response()
+    {
+        SmoothStep_Timer_start = 0.0f;
+        while (isMoving)
+        {
+            t = Mathf.Clamp(SmoothStep_Timer_start / SmoothStep_Duration, 0, 1);
+            if (isRotating_Right)
+            {
+                Cam_RotZ = Mathf.SmoothStep(0, -1, t);
+
+                Debug.Log("Timer go UPP");
+                SmoothStep_Timer_start += Time.deltaTime;
+
+                if (SmoothStep_Timer_start >= SmoothStep_Timer_end)
+                {
+                    isRotating_Right = false;
+                    //SmoothStep_Timer_start = SmoothStep_Timer_end;
+                }
+            }
+            else if (!isRotating_Right)
+            {
+                Debug.Log("Timer go down");
+                SmoothStep_Timer_start -= Time.deltaTime;
+                if (SmoothStep_Timer_start <= 0.0f)
+                {
+                    isRotating_Right = true;
+                    // SmoothStep_Timer_start = 0.0f;
+                }
+            }
+            yield return null;
+
+        }
+        Cam_RotZ = 0;
+        Camera_Shake_Coro = null;
+
+                            ----THE OLD CAMERA LOGIC----
+NOTE: Code works fine, it was for teh built in unity camera
+    public void CameraLogic()
+    {
+        CamX = LookVector.x * LookSensitivity;
+        CamY = LookVector.y * LookSensitivity;
+        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
+        VerticleRotation -= CamY;
+        HorozontalRotation -= -CamX;
+
+        Cin_cam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
+        transform.Rotate(Vector3.up * CamX);
+        Debug.Log("CameraLogicCalled");
+    }
     }
 
  */
