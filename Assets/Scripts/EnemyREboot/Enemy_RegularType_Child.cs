@@ -56,7 +56,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             }
 
 
-        if (isPatrolling == true && State_Tracker_Coro == null)
+        if (isPatrolling == true && State_Tracker_Coro == null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             Debug.Log("Should start patrolling");
             State_Tracker_Coro = StartCoroutine(PatrollRouteLogic());
@@ -75,7 +75,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     {
         Debug.Log("PATROLL");
       
-        while (isPatrolling == true  && IsDead == false)
+        while (isPatrolling == true  && IsDead == false && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             if (isChasing == true)
             {
@@ -95,13 +95,13 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     }
     private IEnumerator ChasingLogic()
     {
-        if (isPatrolling == true)
+        if (isPatrolling == true && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.ResetPath();
             yield break;
         }
         Debug.Log("CHASE");
-        while (isChasing == true && isPatrolling == false && IsDead == false)
+        while (isChasing == true && isPatrolling == false && IsDead == false && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.SetDestination(player.transform.position);
             yield return new WaitForSeconds(0.5f);
@@ -138,7 +138,8 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
 
     private bool Is_ShootingDistance_()
     {
-        if (Dis_to_Player <= 30.0f)
+         
+        if (Dis_to_Player <= 30.0f && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = true;
            // Debug.Log("isInShankRange TRUE");
@@ -146,10 +147,14 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         }
         else
         {
-            agent.isStopped = false;
+            if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
             //Debug.Log("isInShankRange TRUE");
             return false;
         }
+
     }
 
     private IEnumerator AttackOneLogic()

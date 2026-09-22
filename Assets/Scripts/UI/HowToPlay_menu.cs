@@ -23,6 +23,6 @@ public class HowToPlay_menu : MonoBehaviour
     }
     public void OnContinueButtonCLick(ClickEvent evt)
     {
-        SceneManager.LoadScene("Small_Town_1");
+        SceneManager.LoadScene("Small_Town_Proto2");
     }
 }

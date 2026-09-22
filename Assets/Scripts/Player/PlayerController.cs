@@ -84,6 +84,9 @@ public class PlayerController : MonoBehaviour
     //---UI stuff--//
    public Notes_Popup  NotesUI;
     public Interactable_new Interact_Scr;
+    //public Transform[] Notes;
+    public Interactable_Tracker Interact_Tracker;
+    private float DisToNotes;
             #endregion
 
     #region RUNTIME
@@ -104,6 +107,22 @@ public class PlayerController : MonoBehaviour
 
         MoveLogic();
         shoot_script_ref.ShootingLogic();
+      /*  foreach (Transform t in Notes)
+        {
+            DisToNotes = Vector3.Distance(transform.position, t.position);
+            if (DisToNotes <= 5.0f)
+            {
+                isAbleToInteract = true;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Show_Interact_Prompt();
+            }
+            else if (DisToNotes > 5.0f)
+            {
+                isAbleToInteract = false;
+               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Inactive; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Interact_Scr.Hide_Interact_Prompt();
+            } 
+        } */
 
     }
     public void LateUpdate()
@@ -176,19 +195,22 @@ public class PlayerController : MonoBehaviour
         {
             if (isAbleToInteract)
             {
+                if (Interact_Tracker != null)
+                {
+                    NotesUI.Show_Notes(Interact_Tracker);
 
-                NotesUI.Show_Notes();
-               
-                Debug.Log("you are able inetract");
+                    Debug.Log("you are able inetract");
+                }
             }
             else
             {
                 NotesUI.Hide_Notes();
                 Debug.Log("Unable to inetract");
             }
-        }
+            
 
-        
+
+        }
     }
     #endregion
 

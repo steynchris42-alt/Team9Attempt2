@@ -11,6 +11,7 @@ public class Death_menu : MonoBehaviour
     public void OnEnable()
     {
      UnityEngine.Cursor.lockState = CursorLockMode.None ;
+    UnityEngine.Cursor.visible = true ;
         Death_ui = GetComponent<UIDocument>();
         if (Death_ui == null)
         {

@@ -17,6 +17,7 @@ public class Interactable_new : MonoBehaviour
 
     public bool isClearToShow; // returns false if Notes are displaying
     public int iInteractable_Tracker;
+    public bool isPlayerNear;
 
     private void OnEnable()
     {
@@ -32,24 +33,35 @@ public class Interactable_new : MonoBehaviour
             Interact_Image = Interact_UIdoc.Q<Image>("Interaction_Symbol");
             Interact_Prompt = Interact_UIdoc.Q<Label>("Interaction_prompt");
         }
+        Hide_Interact_Prompt();
     }
     void Update()
     {
-        DisToPlayer = Vector3.Distance(transform.position, Player.position);
+        DisToPlayer = Vector3.Distance(transform.position , Player.transform.position);
         Debug.DrawLine(transform.position, Player.position);
-        if (DisToPlayer <= 5.0f && isClearToShow )
+        if (DisToPlayer <= 5.0f  )
         {
-            tracker_Scr.TrackerValue_Inactive = tracker_Scr.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
-            Show_Interact_Prompt();
-            Player_Scr.isAbleToInteract = true;
-            Debug.Log("PlayerInRange");
+            if (!isPlayerNear)
+            {
+                isPlayerNear = true;
+                tracker_Scr.TrackerValue_Inactive = tracker_Scr.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
+                Show_Interact_Prompt();
+               
+                Player_Scr.Interact_Tracker = tracker_Scr;
+                Player_Scr.isAbleToInteract = true;
+                Debug.Log("PlayerInRange");
+            }
         }
-        else if (DisToPlayer > 5 )
+        else 
         {
-            tracker_Scr.TrackerValue_Active = tracker_Scr.TrackerValue_Inactive; //sets the tracker back to zero to avoid conflicts when player is near other interacables
-            Hide_Interact_Prompt();
-            Player_Scr.isAbleToInteract = false;
-        }
+            if (isPlayerNear)
+            {
+                isPlayerNear = false;
+                tracker_Scr.TrackerValue_Active = tracker_Scr.TrackerValue_Inactive; //sets the tracker back to zero to avoid conflicts when player is near other interacables
+                Hide_Interact_Prompt();
+                Player_Scr.isAbleToInteract = false;
+            }
+        } 
     }
       public void Show_Interact_Prompt()
     {

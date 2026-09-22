@@ -8,8 +8,10 @@
 }
 
 .LetterBody {
-    top: 36%;
+    top: 19%;
     left: 41%;
+    height: 0%;
+    flex-wrap: wrap;
 }
 
 .CloseNote {
