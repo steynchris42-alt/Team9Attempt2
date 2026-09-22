@@ -11,3 +11,7 @@
     top: 36%;
     left: 41%;
 }
+
+.CloseNote {
+    top: 56%;
+}

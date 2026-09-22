@@ -80,7 +80,12 @@ public class PlayerController : MonoBehaviour
     //---Camera Shake---/
     float Sine_Speed = 2.0f; //Controls interpelation speed
     float Sine_Mag = 0.5f; //controls size of the sine wave
+
+    //---UI stuff--//
+   public Notes_Popup  NotesUI;
+    public Interactable_new Interact_Scr;
             #endregion
+
     #region RUNTIME
     public void Awake()
     {
@@ -90,6 +95,7 @@ public class PlayerController : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
+        NotesUI.Hide_Notes();
     }
 
     public void Update()
@@ -171,10 +177,13 @@ public class PlayerController : MonoBehaviour
             if (isAbleToInteract)
             {
 
+                NotesUI.Show_Notes();
+               
                 Debug.Log("you are able inetract");
             }
             else
             {
+                NotesUI.Hide_Notes();
                 Debug.Log("Unable to inetract");
             }
         }
