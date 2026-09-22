@@ -31,7 +31,7 @@ public class Death_menu : MonoBehaviour
 
     public void OnRestartButtonCLick(ClickEvent evt)
     {
-        SceneManager.LoadScene("Small_Town_1");
+        SceneManager.LoadScene("Small_Town_Proto2");
     }
     public void On_ReturnToMain_Button_Click(ClickEvent evt)
     {

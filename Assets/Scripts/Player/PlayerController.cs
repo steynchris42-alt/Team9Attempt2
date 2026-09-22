@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviour
     private float SpeedReset = 5.0f;
 
     //--Physics settings--//
-    private float DownForce = -2f;
+    private float DownForce = -3f;
     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
     Vector3 motion_Direction;
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
@@ -207,9 +207,6 @@ public class PlayerController : MonoBehaviour
                 NotesUI.Hide_Notes();
                 Debug.Log("Unable to inetract");
             }
-            
-
-
         }
     }
     #endregion
@@ -246,6 +243,7 @@ public class PlayerController : MonoBehaviour
             Cin_cam.Lens.FieldOfView = Fov_Max;
             TimerStart += Time.deltaTime;
             yield return null;
+            Sine_Speed = 4.0f;
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
         MoveSpeed = SpeedReset;
         Cin_cam.Lens.FieldOfView = Fov_Min;
@@ -256,9 +254,9 @@ public class PlayerController : MonoBehaviour
         if (Mobility_coro == null && controller.isGrounded == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y = JumpForce + JumpHeight;
-            yield return new WaitForSeconds(1f);
-            Player_vert.y = JumpForce_down;
+            Player_vert.y = (JumpForce + JumpHeight) * 2;
+            yield return new WaitForSeconds(0.5f);
+            Player_vert.y = JumpForce_down * 2;
             yield return new WaitUntil(() => controller.isGrounded == true);
             Mobility_coro = null;
         }
