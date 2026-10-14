@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 
 public class Interactable_new : MonoBehaviour
 {
+    //--Setup--//
     public Transform Player;
 
     private UIDocument Interact_ui;
@@ -19,8 +20,9 @@ public class Interactable_new : MonoBehaviour
     public int iInteractable_Tracker;
     public bool isPlayerNear;
 
+    //OnEnable Queries and displays Interaction prompt
     private void OnEnable()
-    {
+    { 
         Interact_ui = GetComponent<UIDocument>();
         if (Interact_ui == null)
         {
@@ -48,7 +50,7 @@ public class Interactable_new : MonoBehaviour
                 Show_Interact_Prompt();
                
                 Player_Scr.Interact_Tracker = tracker_Scr;
-                Player_Scr.isAbleToInteract = true;
+                Player_Scr.isAbleToInteract = true; 
                 Debug.Log("PlayerInRange");
             }
         }

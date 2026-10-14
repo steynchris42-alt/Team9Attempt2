@@ -23,9 +23,7 @@ public class Bullet_Scr : MonoBehaviour
     public void OnCollisionEnter(Collision collision)
     {
             Debug.Log("bullet collision");
-       
-            BulletDestroy_particle.Play();
-        
+            //BulletDestroy_particle.Play();
             Destroy(this.gameObject, 0.5f);
                    
     }

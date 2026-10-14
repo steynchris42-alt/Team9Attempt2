@@ -16,9 +16,6 @@ public class Enemy_Bullet : MonoBehaviour
     {
         RigBod = RigBod.GetComponent<Rigidbody>();
         meshRen =  meshRen.GetComponent<MeshRenderer>(); 
-        
-
-        
         Bullet_Force = ForceMode.Impulse;
     }
     public void Fire_Bullet()

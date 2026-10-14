@@ -6,10 +6,10 @@ public class Interactable_Tracker : MonoBehaviour
     public int TrackerValue_Inactive = -1;
     public int TrackerValue_Active;
 
+    public int TrackerValue_PortalGlyph;
+
     public Notes_Popup Note_Scr;
     //easy way to assign numerical values to gameobejcts for identification purposes
-
-
  
     public void Note_StateSwitch()
     {
