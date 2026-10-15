@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     [SerializeField] private bool isInteracting;
+
     public bool isAbleToInteract;//Set in "Interactable_new" script
 
     public bool isMoving;
@@ -26,7 +27,7 @@ public class PlayerController : MonoBehaviour
 
     //--speed settings--//
     [SerializeField] private float MoveSpeed = 5.0f;
-    [SerializeField] private float SprintSpeed = 10.0f;
+   public float SprintSpeed = 10.0f;
     private float SpeedReset = 5.0f;
 
     //--Physics settings--//
@@ -86,7 +87,6 @@ public class PlayerController : MonoBehaviour
     public Interactable_new Interact_Scr;
     //public Transform[] Notes;
     public Interactable_Tracker Interact_Tracker;
-    private float DisToNotes;
             #endregion
 
     #region RUNTIME
@@ -191,17 +191,15 @@ public class PlayerController : MonoBehaviour
     public void Interaction(InputAction.CallbackContext context)
     {
         isInteracting = context.ReadValueAsButton();
-        if (context.performed)
+        if (context.performed && isAbleToInteract)
         {
-            if (isAbleToInteract)
-            {
-                if (Interact_Tracker != null)
-                {
-                    NotesUI.Show_Notes(Interact_Tracker);
-
-                    Debug.Log("you are able inetract");
+           if (Interact_Tracker != null) 
+             {
+                NotesUI.Show_Notes(Interact_Tracker);
+                
+                Debug.Log("you are able inetract");
                 }
-            }
+           
             else
             {
                 NotesUI.Hide_Notes();

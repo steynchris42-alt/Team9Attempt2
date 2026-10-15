@@ -41,7 +41,6 @@ public class Notes_Popup : MonoBehaviour
             ClosePage.RegisterCallback<ClickEvent>(OnClosePopupButtonCLick);
         }
     }
-
     public void OnClosePopupButtonCLick(ClickEvent evt)
     {
         Debug.Log("cLICKED");
