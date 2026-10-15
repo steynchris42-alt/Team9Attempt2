@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using static Notes_Popup;
 
@@ -5,6 +6,8 @@ public class Interactable_Tracker : MonoBehaviour
 {
     public int TrackerValue_Inactive = -1;
     public int TrackerValue_Active;
+
+    public int GlyphTracker;
 
     public int TrackerValue_PortalGlyph;
 
@@ -23,7 +26,14 @@ public class Interactable_Tracker : MonoBehaviour
         }
     }
 
+    public void Glyph_StateSwitch()
+    {
+    
+
+    }
 }
+
+
   
 
 

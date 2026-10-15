@@ -48,7 +48,6 @@ public class Interactable_new : MonoBehaviour
                 isPlayerNear = true;
                 tracker_Scr.TrackerValue_Inactive = tracker_Scr.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
                 Show_Interact_Prompt();
-               
                 Player_Scr.Interact_Tracker = tracker_Scr;
                 Player_Scr.isAbleToInteract = true; 
                 Debug.Log("PlayerInRange");
@@ -67,18 +66,15 @@ public class Interactable_new : MonoBehaviour
     }
       public void Show_Interact_Prompt()
     {
-        
             Interact_ui = Interact_ui.GetComponent<UIDocument>();
-            if (Interact_ui == null)
-            {
+             if (Interact_ui == null)
+                  {
                 return;
             }
             Interact_ui.rootVisualElement.style.display = DisplayStyle.Flex;
-        
     }
     public void Hide_Interact_Prompt()
     {
-      
             Interact_ui = Interact_ui.GetComponent<UIDocument>();
             if (Interact_ui == null)
             {

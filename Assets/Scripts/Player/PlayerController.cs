@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
 
     //--speed settings--//
     [SerializeField] private float MoveSpeed = 5.0f;
-    [SerializeField] private float SprintSpeed = 10.0f;
+   public float SprintSpeed = 10.0f;
     private float SpeedReset = 5.0f;
 
     //--Physics settings--//
@@ -199,7 +199,7 @@ public class PlayerController : MonoBehaviour
                 
                 Debug.Log("you are able inetract");
                 }
-            
+           
             else
             {
                 NotesUI.Hide_Notes();
