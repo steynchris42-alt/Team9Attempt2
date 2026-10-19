@@ -161,6 +161,36 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""Activate_PowerUp1"",
+                    ""type"": ""Button"",
+                    ""id"": ""949e4ad4-6215-4370-a44a-588fc970179e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Activate_PowerUp2"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaacc5d7-609b-4b14-9377-c207fe39d1fd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Activate_PowerUp3"",
+                    ""type"": ""Button"",
+                    ""id"": ""c80432af-875b-47f5-b318-6e16c32fbacd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -284,6 +314,39 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Interaction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""52b5434a-518a-4011-aaed-d4d32a163aab"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Activate_PowerUp1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7beadc00-2701-45ba-a62c-c6260cd72013"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Activate_PowerUp2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""32687f1f-9d2f-441f-ac84-27af9d7825d9"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Activate_PowerUp3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -299,6 +362,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_PlayerActions_Jump = m_PlayerActions.FindAction("Jump", throwIfNotFound: true);
         m_PlayerActions_Dash = m_PlayerActions.FindAction("Dash", throwIfNotFound: true);
         m_PlayerActions_Interaction = m_PlayerActions.FindAction("Interaction", throwIfNotFound: true);
+        m_PlayerActions_Activate_PowerUp1 = m_PlayerActions.FindAction("Activate_PowerUp1", throwIfNotFound: true);
+        m_PlayerActions_Activate_PowerUp2 = m_PlayerActions.FindAction("Activate_PowerUp2", throwIfNotFound: true);
+        m_PlayerActions_Activate_PowerUp3 = m_PlayerActions.FindAction("Activate_PowerUp3", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -386,6 +452,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerActions_Jump;
     private readonly InputAction m_PlayerActions_Dash;
     private readonly InputAction m_PlayerActions_Interaction;
+    private readonly InputAction m_PlayerActions_Activate_PowerUp1;
+    private readonly InputAction m_PlayerActions_Activate_PowerUp2;
+    private readonly InputAction m_PlayerActions_Activate_PowerUp3;
     /// <summary>
     /// Provides access to input actions defined in input action map "PlayerActions".
     /// </summary>
@@ -425,6 +494,18 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PlayerActions/Interaction".
         /// </summary>
         public InputAction @Interaction => m_Wrapper.m_PlayerActions_Interaction;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerActions/Activate_PowerUp1".
+        /// </summary>
+        public InputAction @Activate_PowerUp1 => m_Wrapper.m_PlayerActions_Activate_PowerUp1;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerActions/Activate_PowerUp2".
+        /// </summary>
+        public InputAction @Activate_PowerUp2 => m_Wrapper.m_PlayerActions_Activate_PowerUp2;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerActions/Activate_PowerUp3".
+        /// </summary>
+        public InputAction @Activate_PowerUp3 => m_Wrapper.m_PlayerActions_Activate_PowerUp3;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -472,6 +553,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Interaction.started += instance.OnInteraction;
             @Interaction.performed += instance.OnInteraction;
             @Interaction.canceled += instance.OnInteraction;
+            @Activate_PowerUp1.started += instance.OnActivate_PowerUp1;
+            @Activate_PowerUp1.performed += instance.OnActivate_PowerUp1;
+            @Activate_PowerUp1.canceled += instance.OnActivate_PowerUp1;
+            @Activate_PowerUp2.started += instance.OnActivate_PowerUp2;
+            @Activate_PowerUp2.performed += instance.OnActivate_PowerUp2;
+            @Activate_PowerUp2.canceled += instance.OnActivate_PowerUp2;
+            @Activate_PowerUp3.started += instance.OnActivate_PowerUp3;
+            @Activate_PowerUp3.performed += instance.OnActivate_PowerUp3;
+            @Activate_PowerUp3.canceled += instance.OnActivate_PowerUp3;
         }
 
         /// <summary>
@@ -504,6 +594,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Interaction.started -= instance.OnInteraction;
             @Interaction.performed -= instance.OnInteraction;
             @Interaction.canceled -= instance.OnInteraction;
+            @Activate_PowerUp1.started -= instance.OnActivate_PowerUp1;
+            @Activate_PowerUp1.performed -= instance.OnActivate_PowerUp1;
+            @Activate_PowerUp1.canceled -= instance.OnActivate_PowerUp1;
+            @Activate_PowerUp2.started -= instance.OnActivate_PowerUp2;
+            @Activate_PowerUp2.performed -= instance.OnActivate_PowerUp2;
+            @Activate_PowerUp2.canceled -= instance.OnActivate_PowerUp2;
+            @Activate_PowerUp3.started -= instance.OnActivate_PowerUp3;
+            @Activate_PowerUp3.performed -= instance.OnActivate_PowerUp3;
+            @Activate_PowerUp3.canceled -= instance.OnActivate_PowerUp3;
         }
 
         /// <summary>
@@ -593,5 +692,26 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInteraction(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Activate_PowerUp1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActivate_PowerUp1(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Activate_PowerUp2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActivate_PowerUp2(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Activate_PowerUp3" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnActivate_PowerUp3(InputAction.CallbackContext context);
     }
 }

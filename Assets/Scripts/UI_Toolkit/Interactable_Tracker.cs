@@ -4,7 +4,8 @@ using static Notes_Popup;
 
 public class Interactable_Tracker : MonoBehaviour
 {
-    public int TrackerValue_Inactive = -1;
+    public int NoteTracker;
+    /*public int TrackerValue_Inactive = -1;
     public int TrackerValue_Active;
 
     public int GlyphTracker;
@@ -25,12 +26,8 @@ public class Interactable_Tracker : MonoBehaviour
             case 4: Note_Scr.notes = Notes.Note4; break;
         }
     }
+    */
 
-    public void Glyph_StateSwitch()
-    {
-    
-
-    }
 }
 
 

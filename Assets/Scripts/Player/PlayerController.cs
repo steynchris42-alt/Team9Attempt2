@@ -1,26 +1,37 @@
+using JetBrains.Annotations;
+using System.Collections;
+using System.Net.Mime;
+using TMPro;
+using Unity.Cinemachine;
+using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
-using System.Collections;
-using JetBrains.Annotations;
-using Unity.Mathematics;
 using UnityEngine.UI;
-using UnityEditor.Rendering;
 
 public class PlayerController : MonoBehaviour
 {
     #region INSTANCE FIELDS
-    [Header("Ui Canvas Related")]
-    ///SPRINTING CANVAS////    
-    ///
+    [Header("UGUI RELATED")]
+    //SPRINTING CANVAS//    
     public Slider Sprint_Slider;
     private float Sprint_Duration;
     public bool isSprintRecharging;
 
+    //INTERACTION CANVAS// 
+    public int iPowerUp_Type1;
+    public int iPowerUp_Type2;
+    public int iPowerUp_Type3;
+
+    public TextMeshProUGUI PowerUp_UI_Type1;
+    public TextMeshProUGUI PowerUp_UI_Type2;
+    public TextMeshProUGUI PowerUp_UI_Type3;
+
     //raycast//
     public LayerMask Ground;
+    public LayerMask interactable;
     public LayerMask House_Platform;
 
     [Header("MovementRelated")]
@@ -31,6 +42,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     [SerializeField] private bool isInteracting;
+    [SerializeField] private bool IsUsing_PowerUp_Type1;
+
 
 
     public bool isAbleToInteract;//Set in "Interactable_new" script
@@ -97,11 +110,10 @@ public class PlayerController : MonoBehaviour
     float Sine_Speed = 5.0f; //Controls interpolation speed
     float Sine_Mag = 0.5f; //controls magnitude of the sine wave
 
-    //---UI stuff--//
-    public Notes_Popup NotesUI;
-    public Interactable_new Interact_Scr;
-    //public Transform[] Notes;
-    public Interactable_Tracker Interact_Tracker;
+    [Header("OTHER SCRIPTS")]
+ 
+    public LineOfSight_Scr LineOfSight_scr;
+
     #endregion
 
     #region RUNTIME
@@ -113,7 +125,6 @@ public class PlayerController : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-        NotesUI.Hide_Notes();
     }
 
     public void Update()
@@ -188,22 +199,80 @@ public class PlayerController : MonoBehaviour
 
     }
     public void Interaction(InputAction.CallbackContext context)
-    {
+    {  
         isInteracting = context.ReadValueAsButton();
-        if (context.performed && isAbleToInteract)
+        if (context.performed)
         {
-            if (Interact_Tracker != null)
+            Debug.Log("Pressed E");
+            if (LineOfSight_scr.isShowing_InteractPrompt_Notes) //condition for NOTES INTERACT PROMPT
             {
-                NotesUI.Show_Notes(Interact_Tracker);
+                LineOfSight_scr.isInteraction_Success_Notes = true; //enables NOTES
 
-                Debug.Log("you are able inetract");
             }
-
-            else
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type1) //condition for POWERUPS INTERACT PROMPT TYPE1
             {
-                NotesUI.Hide_Notes();
-                Debug.Log("Unable to inetract");
+               LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+               LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
+                
             }
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type2) //condition for POWERUPS INTERACT PROMPT TYPE2
+            {
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type2 = true;
+            }
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type3) //condition for POWERUPS INTERACT PROMPT TYPE3
+            {
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type3 = true;
+            }
+        }  
+    }
+     public void PowerUp_Type1(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type1 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");            
+            iPowerUp_Type1 -= 1;
+            PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
+            // LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
+            // IsUsing_PowerUp_Type1 = true;  
+        }
+        else if (context.performed && iPowerUp_Type1 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
+            // IsUsing_PowerUp_Type1 = true;  
+        }
+    }
+    public void PowerUp_Type2(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type2 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");
+           iPowerUp_Type2 -= 1;
+            PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
+            //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
+        }
+        else if (context.performed && iPowerUp_Type2 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
+        }
+    }
+    public void PowerUp_Type3(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type3 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");
+            iPowerUp_Type3 -= 1;
+            PowerUp_UI_Type3.text = iPowerUp_Type3.ToString();
+            //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type3.text =     iPowerUp_Type3.ToString();
+
+        }
+        else if (context.performed && iPowerUp_Type3 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
         }
     }
     #endregion
@@ -340,8 +409,8 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Recharging sprint");
        }
     }
-   
 
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

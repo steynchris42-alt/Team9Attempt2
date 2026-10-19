@@ -19,7 +19,8 @@ public class Enemy_parent_Class : MonoBehaviour
     //Spawning related
     [SerializeField] protected float RespawnTimer = 5.0f;
     protected float RespawnTimer_reset = 5.0f;
-    public static Action Kill_Event;
+
+    public static Action Kill_Event; //utilised in Kill tracker script
 
     private Collider collider;
     private MeshRenderer MeshRen;
@@ -100,7 +101,8 @@ public class Enemy_parent_Class : MonoBehaviour
         {return;}
         IsAtSpawn = false;
         IsDead = true;
-        Kill_Event.Invoke();
+
+        Kill_Event.Invoke(); //TRIGGERS KILL TRACKER UPDATE
     }
     protected IEnumerator CircleOFLife()
     {
