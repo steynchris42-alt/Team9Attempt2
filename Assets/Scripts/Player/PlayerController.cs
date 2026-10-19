@@ -1,37 +1,64 @@
+using JetBrains.Annotations;
+using System.Collections;
+using System.Net.Mime;
+using TMPro;
+using Unity.Cinemachine;
+using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Unity.Cinemachine;
 using UnityEngine.InputSystem.Controls;
-using System.Collections;
-using JetBrains.Annotations;
-using Unity.Mathematics;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     #region INSTANCE FIELDS
-    [Header("MovementRelated")]
+    [Header("UGUI RELATED")]
+    //SPRINTING CANVAS//    
+    public Slider Sprint_Slider;
+    private float Sprint_Duration;
+    public bool isSprintRecharging;
 
+    //INTERACTION CANVAS// 
+    public int iPowerUp_Type1;
+    public int iPowerUp_Type2;
+    public int iPowerUp_Type3;
+
+    public TextMeshProUGUI PowerUp_UI_Type1;
+    public TextMeshProUGUI PowerUp_UI_Type2;
+    public TextMeshProUGUI PowerUp_UI_Type3;
+
+    //raycast//
+    public LayerMask Ground;
+    public LayerMask interactable;
+    public LayerMask House_Platform;
+
+    [Header("MovementRelated")]
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-    [SerializeField] private bool isSprinting;
+    [SerializeField] private bool isSprinting; //returns true based on the timer in 'sprinty' Ienumerator
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     [SerializeField] private bool isInteracting;
+    [SerializeField] private bool IsUsing_PowerUp_Type1;
+
+
 
     public bool isAbleToInteract;//Set in "Interactable_new" script
 
     public bool isMoving;
     public Shooting shoot_script_ref;
 
+
     //--speed settings--//
-    [SerializeField] private float MoveSpeed = 5.0f;
-   public float SprintSpeed = 10.0f;
-    private float SpeedReset = 5.0f;
+    [SerializeField] private float MoveSpeed = 7.0f;
+    public float SprintSpeed = 8.0f;
+    private float SpeedReset = 7.0f;
 
     //--Physics settings--//
-    private float DownForce = -3f;
+    private float DownForce = -4f;
     private Vector3 Player_vert; // This vector will refer to the players position on the Y axis (up and down)
     Vector3 motion_Direction;
     [SerializeField] private Vector2 Movement_Vector; // this is the condition for movemnet action map
@@ -45,7 +72,7 @@ public class PlayerController : MonoBehaviour
     //--Jump settings--//
     private float JumpForce = 1.0f;
     [SerializeField] private float JumpHeight = 1.0f;
-    private float JumpForce_down = -5.0f;
+    private float JumpForce_down = -10.0f;
 
     [Header("Dash_Settings")]
     //--Dash settings--//
@@ -61,11 +88,12 @@ public class PlayerController : MonoBehaviour
     protected Vector2 LookVector;
     private float Fov_Max = 80;
     private float Fov_Min = 75;
-    [SerializeField] private float MouseSenseX ;
+    [SerializeField] private float MouseSenseX;
     [SerializeField] private float MouseSenseY;
 
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
+    public bool IsRayGRound;
     [Header("Coroutine related")]
     //---Coroutines---//
     public Coroutine Mobility_coro;
@@ -74,56 +102,38 @@ public class PlayerController : MonoBehaviour
 
     //---Particle effect related--//
     public ParticleSystem MuzzleFlash_part; //enabled in shooting script
-    
+
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
 
     //---Camera Shake---/
-    float Sine_Speed = 2.0f; //Controls interpelation speed
-    float Sine_Mag = 0.5f; //controls size of the sine wave
+    float Sine_Speed = 5.0f; //Controls interpolation speed
+    float Sine_Mag = 0.5f; //controls magnitude of the sine wave
 
-    //---UI stuff--//
-   public Notes_Popup  NotesUI;
-    public Interactable_new Interact_Scr;
-    //public Transform[] Notes;
-    public Interactable_Tracker Interact_Tracker;
-            #endregion
+    [Header("OTHER SCRIPTS")]
+ 
+    public LineOfSight_Scr LineOfSight_scr;
+
+    #endregion
 
     #region RUNTIME
     public void Awake()
     {
         if (Cin_cam == null) TryGetComponent(out Cin_cam);
         if (controller == null) TryGetComponent(out controller);
-        if(MuzzleFlash_part == null)  GetComponentInChildren<ParticleSystem>();
+        if (MuzzleFlash_part == null) GetComponentInChildren<ParticleSystem>();
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
-        NotesUI.Hide_Notes();
     }
 
     public void Update()
     {
         isGround_bool = controller.isGrounded;
-
+        GroundCheack();
         MoveLogic();
         shoot_script_ref.ShootingLogic();
-      /*  foreach (Transform t in Notes)
-        {
-            DisToNotes = Vector3.Distance(transform.position, t.position);
-            if (DisToNotes <= 5.0f)
-            {
-                isAbleToInteract = true;
-               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Active; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
-                Interact_Scr.Show_Interact_Prompt();
-            }
-            else if (DisToNotes > 5.0f)
-            {
-                isAbleToInteract = false;
-               // Interact_Tracker.TrackerValue_Inactive = Interact_Tracker.TrackerValue_Inactive; //Sets the tracker to its actual value so that it triggers teh state switch in Notes_Popup
-                Interact_Scr.Hide_Interact_Prompt();
-            } 
-        } */
-
+        SprintCoolDown();  //Activates the cooldown for sprinting when the stamina bar is drained 
     }
     public void LateUpdate()
     {
@@ -189,22 +199,80 @@ public class PlayerController : MonoBehaviour
 
     }
     public void Interaction(InputAction.CallbackContext context)
-    {
+    {  
         isInteracting = context.ReadValueAsButton();
-        if (context.performed && isAbleToInteract)
+        if (context.performed)
         {
-           if (Interact_Tracker != null) 
-             {
-                NotesUI.Show_Notes(Interact_Tracker);
-                
-                Debug.Log("you are able inetract");
-                }
-           
-            else
+            Debug.Log("Pressed E");
+            if (LineOfSight_scr.isShowing_InteractPrompt_Notes) //condition for NOTES INTERACT PROMPT
             {
-                NotesUI.Hide_Notes();
-                Debug.Log("Unable to inetract");
+                LineOfSight_scr.isInteraction_Success_Notes = true; //enables NOTES
+
             }
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type1) //condition for POWERUPS INTERACT PROMPT TYPE1
+            {
+               LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+               LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
+                
+            }
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type2) //condition for POWERUPS INTERACT PROMPT TYPE2
+            {
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type2 = true;
+            }
+            else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type3) //condition for POWERUPS INTERACT PROMPT TYPE3
+            {
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type3 = true;
+            }
+        }  
+    }
+     public void PowerUp_Type1(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type1 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");            
+            iPowerUp_Type1 -= 1;
+            PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
+            // LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
+            // IsUsing_PowerUp_Type1 = true;  
+        }
+        else if (context.performed && iPowerUp_Type1 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
+            // IsUsing_PowerUp_Type1 = true;  
+        }
+    }
+    public void PowerUp_Type2(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type2 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");
+           iPowerUp_Type2 -= 1;
+            PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
+            //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
+        }
+        else if (context.performed && iPowerUp_Type2 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
+        }
+    }
+    public void PowerUp_Type3(InputAction.CallbackContext context)
+    {
+        if (context.performed && iPowerUp_Type3 >= 1)
+        {
+            Debug.Log("Powerup type 1 USED");
+            iPowerUp_Type3 -= 1;
+            PowerUp_UI_Type3.text = iPowerUp_Type3.ToString();
+            //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type3.text =     iPowerUp_Type3.ToString();
+
+        }
+        else if (context.performed && iPowerUp_Type3 < 1)
+        {
+            Debug.Log("Cannot use PowerUp TYPE!");
+
         }
     }
     #endregion
@@ -213,50 +281,77 @@ public class PlayerController : MonoBehaviour
     public void MoveLogic()
     {
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
-        if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
+        if (IsRayGRound == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
         }
-        else if (controller.isGrounded == false && isJumping == false)
+        else if (IsRayGRound == false && isJumping == false)
         {
             Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
         }
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-
     }
 
     public IEnumerator Sprinty()
     {
-
+        float SliderTime = 0;
+        float SliderDuration = 5.0f;
         float TimerStart = 0;
         float TimerEnd = 5;
 
         Debug.Log("Sprinting Start");
+
         MoveSpeed = SprintSpeed;
-
-
-        while (isSprinting && TimerStart < TimerEnd)
+        while (isSprinting && TimerStart < TimerEnd && Sprint_Slider.value > Sprint_Slider.minValue) //This while loop makes the stamina bar move up when sprint key is being pressed and the bar is not empty
         {
-            Cin_cam.Lens.FieldOfView = Fov_Max;
+            isSprintRecharging = false; 
+            Sprint_Duration = 0;
+            //above two lines reset the the sprinting cooldown in UPDATE
             TimerStart += Time.deltaTime;
+            SliderTime += Time.deltaTime; // increases values over real seconds.
+                                          // 
+            Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.minValue, 3 * Time.deltaTime); //Decreases teh sprint value at a fixed time
+            Cin_cam.Lens.FieldOfView = Fov_Max;
             yield return null;
-            Sine_Speed = 4.0f;
+
+            Sine_Speed = 10.0f; //increases camera swaying effect speed
+
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
+        isSprintRecharging = true;
         MoveSpeed = SpeedReset;
         Cin_cam.Lens.FieldOfView = Fov_Min;
+        Sine_Speed = 5.0f;
+        // Sprint_Slider.value = Mathf.Lerp(Sprint_Slider.minValue, Sprint_Slider.maxValue, SliderTime / SliderDuration);
         Mobility_coro_two = null;
     }
     public IEnumerator JumpLogic()
     {
-        if (Mobility_coro == null && controller.isGrounded == true)
+        if (Mobility_coro == null && IsRayGRound == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y = (JumpForce + JumpHeight) * 2;
-            yield return new WaitForSeconds(0.5f);
-            Player_vert.y = JumpForce_down * 2;
-            yield return new WaitUntil(() => controller.isGrounded == true);
+            Player_vert.y =(JumpForce + JumpHeight) * 2 ;
+            yield return new WaitForSeconds(0.2f) ;
+            Player_vert.y = JumpForce_down;
+           // Player_vert.y = Mathf.Sin(JumpForce_down * 8  *Time.time);
+            yield return new WaitUntil(() => IsRayGRound == true);
             Mobility_coro = null;
+        }
+    }
+    public void GroundCheack()
+    {
+        float RayDis = 2f;
+        RaycastHit GroundRay;
+        bool IsRayHit = Physics.Raycast(transform.position, Vector3.down, out GroundRay, RayDis, Ground + House_Platform);
+        if (IsRayHit)
+        {
+            IsRayGRound = true;
+            Debug.DrawRay(transform.position, Vector3.down * RayDis, Color.green);
+        }
+        else
+        {
+            IsRayGRound = false;
+            Debug.DrawRay(transform.position, Vector3.down * RayDis, Color.red);
         }
     }
     public IEnumerator Dash_Logic()
@@ -293,12 +388,9 @@ public class PlayerController : MonoBehaviour
     }
     public IEnumerator Cin_Camera_Effects()
     {
-       
         while (isMoving && Cin_cam != null)
         {
-   
           Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
-        
           yield return null;
         }
         if (Cin_cam != null)
@@ -308,6 +400,17 @@ public class PlayerController : MonoBehaviour
         Camera_Shake_Coro = null;
         #endregion
     }
+
+    public void SprintCoolDown()
+    {
+      if (isSprintRecharging == true)
+       {
+        Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.maxValue, 1f * Time.deltaTime);
+            Debug.Log("Recharging sprint");
+       }
+    }
+
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
