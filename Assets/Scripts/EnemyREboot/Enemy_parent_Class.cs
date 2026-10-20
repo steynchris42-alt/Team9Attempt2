@@ -12,7 +12,7 @@ public class Enemy_parent_Class : MonoBehaviour
     protected float MoveSpeed_Slow;
 
     [Header("Health and respawn Settings")]
-   public int Max_health = 10;
+   public int Max_health = 100;
    public int Min_health = 1;
     public int Current_health;
 
@@ -58,6 +58,11 @@ public class Enemy_parent_Class : MonoBehaviour
     [Header("Other Scripts")]
    private Enemy_RegularType_Child Enemy_Reg;
    public KillTracker KillTracker_scr;
+    //--Silent reference
+    public Enemy_parent_Class Enemy_Parent;
+    
+        
+    
 
     public void Awake()
     {
@@ -130,7 +135,7 @@ public class Enemy_parent_Class : MonoBehaviour
             yield return null;
         }
     }
-    protected virtual void TakeDamage()
+    public virtual void TakeDamage()
     {
         Current_health--;
         particle.Play();

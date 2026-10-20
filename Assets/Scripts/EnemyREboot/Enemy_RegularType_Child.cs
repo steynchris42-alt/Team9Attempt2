@@ -14,13 +14,11 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     public bool IsAttackReady;
 
     public Enemy_Shoot_mech shoot_scr;
-
+    public Shooting PlayerShootScr;
     //Func bool setup for patrolling coroutine
     public Func<bool> is_Chasing_del;
-
     public void Start()
     {
-      
         base.Start();
         
        // isPatrolling = true;
@@ -30,7 +28,10 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         base.Update();
         shoot_scr.FirePoint.transform.LookAt(player.transform.position);
         Is_ShootingDistance_();
-
+       /* if (PlayerShootScr.isRaycastHit) //==== DECREASE HEALTH BY 1 IF SHOOTING RAYCAST LANDS
+        {
+            Current_health -= 1;
+        }*/
         //Assigning specific distances to bools.
         //That way I can use them as conditions for action in my Ineumerators.
 
@@ -191,6 +192,10 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
 
         State_Tracker_Coro = null;
         yield return null;
+    }
+public override void TakeDamage()
+    {
+        base.TakeDamage();
     }
 }
 

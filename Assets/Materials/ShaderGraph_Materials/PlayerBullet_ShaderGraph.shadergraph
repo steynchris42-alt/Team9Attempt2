@@ -11,6 +11,9 @@
         },
         {
             "m_Id": "f5bcb8ec9e3a470a9b28939360632f1f"
+        },
+        {
+            "m_Id": "389be597ac1e4cd1a9cf0ae5bf905910"
         }
     ],
     "m_Keywords": [],
@@ -56,6 +59,9 @@
         },
         {
             "m_Id": "7077cfebed3c476a92e7542fa186f79e"
+        },
+        {
+            "m_Id": "6ceeb679a13048c085bbc6b46495221b"
         }
     ],
     "m_GroupDatas": [],
@@ -92,7 +98,7 @@
         {
             "m_OutputSlot": {
                 "m_Node": {
-                    "m_Id": "771b912490c7448897abb1467ac664d5"
+                    "m_Id": "6ceeb679a13048c085bbc6b46495221b"
                 },
                 "m_SlotId": 0
             },
@@ -274,6 +280,9 @@
         },
         {
             "m_Id": "f5bcb8ec9e3a470a9b28939360632f1f"
+        },
+        {
+            "m_Id": "389be597ac1e4cd1a9cf0ae5bf905910"
         }
     ]
 }
@@ -408,6 +417,43 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "389be597ac1e4cd1a9cf0ae5bf905910",
+    "m_Guid": {
+        "m_GuidSerialized": "358eedc3-8a9f-40ef-b7b1-8e5dd2b55914"
+    },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
+    "m_Name": "CoolBeam-texture",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "CoolBeam-texture",
+    "m_DefaultReferenceName": "_CoolBeam_texture",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"fileID\":2800000,\"guid\":\"3bd1c7cbd855e324d89a440d2b6c1be4\",\"type\":3}}",
+        "m_Guid": ""
+    },
+    "isMainTexture": false,
+    "useTilingAndOffset": false,
+    "useTexelSize": true,
+    "isHDR": false,
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.TangentMaterialSlot",
     "m_ObjectId": "38e9544e64f7480bb373931920cd07d5",
     "m_Id": 0,
@@ -442,10 +488,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -462.5000915527344,
-            "y": -241.00003051757813,
-            "width": 208.0000762939453,
-            "height": 326.0000915527344
+            "x": -549.3333740234375,
+            "y": -367.1111145019531,
+            "width": 208.0,
+            "height": 325.77777099609377
         }
     },
     "m_Slots": [
@@ -640,6 +686,42 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "6ceeb679a13048c085bbc6b46495221b",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -26.465112686157228,
+            "y": -248.649169921875,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "bc7afac7dea34c439423df81f34003d1"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "389be597ac1e4cd1a9cf0ae5bf905910"
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "6d2af398483d4d44ae0c8acd5cfaa243",
     "m_Id": 6,
@@ -787,7 +869,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "Scale",
     "m_StageCapability": 3,
-    "m_Value": 0.3499999940395355,
+    "m_Value": 13.050000190734864,
     "m_DefaultValue": 10.0,
     "m_Labels": [],
     "m_LiteralMode": false
@@ -877,10 +959,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -767.5001220703125,
-            "y": -272.0000305175781,
-            "width": 208.00006103515626,
-            "height": 302.00006103515627
+            "x": -927.1111450195313,
+            "y": -422.66668701171877,
+            "width": 208.0,
+            "height": 301.77777099609377
         }
     },
     "m_Slots": [
@@ -1109,10 +1191,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -957.5000610351563,
-            "y": -226.5000762939453,
-            "width": 124.0001220703125,
-            "height": 173.0000457763672
+            "x": -1455.9998779296875,
+            "y": -300.88885498046877,
+            "width": 124.0,
+            "height": 172.8888397216797
         }
     },
     "m_Slots": [
@@ -1202,6 +1284,19 @@
     "m_EnumValues": [
         0
     ]
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Texture2DMaterialSlot",
+    "m_ObjectId": "bc7afac7dea34c439423df81f34003d1",
+    "m_Id": 0,
+    "m_DisplayName": "CoolBeam-texture",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_BareResource": false
 }
 
 {
@@ -1503,8 +1598,8 @@
     "m_ShaderOutputName": "Tiling",
     "m_StageCapability": 3,
     "m_Value": {
-        "x": 16.25,
-        "y": 2.0
+        "x": 1.0,
+        "y": 1.0
     },
     "m_DefaultValue": {
         "x": 1.0,
