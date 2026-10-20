@@ -55,7 +55,7 @@ public class LineOfSight_Scr : MonoBehaviour
 
         if (isInteractable_Hit == true)
         {
-            Debug.DrawRay(transform.position, transform.forward * RayDis, Color.green);
+          //=====DRAW RAY HERE  Debug.DrawRay(transform.position, transform.forward * RayDis, Color.green);
             Debug.Log("HIT INTERACTABLE");
 
             if (RayHit.collider.GetComponent<Note_Tracker>()) //---Logic executes if the Raycast hits a NOTE--
@@ -104,7 +104,7 @@ public class LineOfSight_Scr : MonoBehaviour
         }
         else
         {
-            Debug.DrawRay(transform.position, transform.forward * RayDis, Color.red);
+          //====DRAW RAY HERE  Debug.DrawRay(transform.position, transform.forward * RayDis, Color.red);
             IsRayHit_PowerUp_Type1 = false;
             IsRayHit_PowerUp_Type2 = false;
             IsRayHit_PowerUp_Type3 = false;

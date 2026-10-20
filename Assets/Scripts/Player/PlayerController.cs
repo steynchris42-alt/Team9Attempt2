@@ -20,7 +20,9 @@ public class PlayerController : MonoBehaviour
     private float Sprint_Duration;
     public bool isSprintRecharging;
 
-    //INTERACTION CANVAS// 
+    
+    [Header("POWER UPS ANND EFFECTS")]
+    //----------POWER UPS RELATES----------// 
     public int iPowerUp_Type1;
     public int iPowerUp_Type2;
     public int iPowerUp_Type3;
@@ -29,6 +31,12 @@ public class PlayerController : MonoBehaviour
     public TextMeshProUGUI PowerUp_UI_Type2;
     public TextMeshProUGUI PowerUp_UI_Type3;
 
+    public GameObject SpeedBoost_Overlay_obj;
+    public GameObject Sprinting_Overlay_obj;
+
+    public Coroutine PowerUp_Type1_Coro;
+    public bool isSpeedBoost;
+    public bool IsOverlayEmpty;
     //raycast//
     public LayerMask Ground;
     public LayerMask interactable;
@@ -94,7 +102,7 @@ public class PlayerController : MonoBehaviour
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     public bool IsRayGRound;
-    [Header("Coroutine related")]
+ 
     //---Coroutines---//
     public Coroutine Mobility_coro;
     public Coroutine Mobility_coro_two;
@@ -119,6 +127,10 @@ public class PlayerController : MonoBehaviour
     #region RUNTIME
     public void Awake()
     {
+        IsOverlayEmpty = true;
+        SpeedBoost_Overlay_obj.SetActive(false);
+        Sprinting_Overlay_obj.SetActive(false);
+
         if (Cin_cam == null) TryGetComponent(out Cin_cam);
         if (controller == null) TryGetComponent(out controller);
         if (MuzzleFlash_part == null) GetComponentInChildren<ParticleSystem>();
@@ -232,16 +244,17 @@ public class PlayerController : MonoBehaviour
         if (context.performed && iPowerUp_Type1 >= 1)
         {
             Debug.Log("Powerup type 1 USED");            
-            iPowerUp_Type1 -= 1;
-            PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
-            // LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
-            // IsUsing_PowerUp_Type1 = true;  
+            isSpeedBoost = true;
+            if (isSpeedBoost && PowerUp_Type1_Coro == null)
+            {
+                iPowerUp_Type1 -= 1;
+                PowerUp_UI_Type1.text = iPowerUp_Type1.ToString();
+                PowerUp_Type1_Coro = StartCoroutine(PowerUp_SpeedBoost());
+            }
         }
         else if (context.performed && iPowerUp_Type1 < 1)
         {
             Debug.Log("Cannot use PowerUp TYPE!");
-
-            // IsUsing_PowerUp_Type1 = true;  
         }
     }
     public void PowerUp_Type2(InputAction.CallbackContext context)
@@ -305,6 +318,10 @@ public class PlayerController : MonoBehaviour
         MoveSpeed = SprintSpeed;
         while (isSprinting && TimerStart < TimerEnd && Sprint_Slider.value > Sprint_Slider.minValue) //This while loop makes the stamina bar move up when sprint key is being pressed and the bar is not empty
         {
+            if (IsOverlayEmpty)
+            {
+                Sprinting_Overlay_obj.SetActive(true);
+            }
             isSprintRecharging = false; 
             Sprint_Duration = 0;
             //above two lines reset the the sprinting cooldown in UPDATE
@@ -319,6 +336,7 @@ public class PlayerController : MonoBehaviour
 
         } //Abovge logic is executed ebery frame until conditions of the loop are no longer met
         isSprintRecharging = true;
+        Sprinting_Overlay_obj.SetActive(false);
         MoveSpeed = SpeedReset;
         Cin_cam.Lens.FieldOfView = Fov_Min;
         Sine_Speed = 5.0f;
@@ -409,8 +427,33 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Recharging sprint");
        }
     }
-
-  
+                //=== POWER UPS LOGIC ===//
+    public IEnumerator PowerUp_SpeedBoost()
+    {
+        float TimerStart = 0;
+        float TimerEnd = 5;
+        Debug.Log("Sprinting Start");
+        MoveSpeed = 20.0f;
+        SprintSpeed = 30.0f;
+        while (isSpeedBoost && TimerStart < TimerEnd) //This while loop makes the stamina bar move up when sprint key is being pressed and the bar is not empty
+        {
+            SpeedBoost_Overlay_obj.SetActive(true);
+            IsOverlayEmpty = false; // PREVENTS SPRINT OVERLAY
+            Debug.Log("GOTTA GO FAST");
+            TimerStart += Time.deltaTime;
+            Cin_cam.Lens.FieldOfView = Fov_Max;
+            Sine_Speed = 20.0f; //increases camera swaying effect speed
+            yield return null;
+        }
+        SpeedBoost_Overlay_obj.SetActive(false);
+        IsOverlayEmpty = true;
+        MoveSpeed = SpeedReset;
+        SprintSpeed = 8.0f;
+        Cin_cam.Lens.FieldOfView = Fov_Min;
+        Sine_Speed = 5.0f;
+        PowerUp_Type1_Coro = null;
+ 
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
