@@ -7,15 +7,11 @@ using System.Collections;
 
 public class Player_Controller_Child : MonoBehaviour
 {
-
     #region INSTANCE FIELDS
-    [Header("MovementRelated")]
-
+    [Header("Movement Related")]
     [SerializeField] private CharacterController controller;
-    //Input actions contexts
     [SerializeField] private Vector2 Movement_Vector;
     [SerializeField] private bool isSprinting;
-   
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     public Shooting shoot_script_ref;
@@ -27,36 +23,25 @@ public class Player_Controller_Child : MonoBehaviour
 
     //--Physics settings--//
     private float DownForce = -2f;
-
     private Vector3 Player_vert;
-    private Vector3 Player_horo;
-    private Vector3 Player_Forward;
-
+    private Vector3 motion_Direction;
     private Vector3 Move_Collab;
-    Vector3 motion_Direction;
 
     private Vector3 DashMotion;
-    private Vector3 Dash_Collab;
     private Vector3 Dash_Dir;
 
-    [Header("Jump_Settings")]
-    //--Jump settings--//
+    [Header("Jump Settings")]
     [SerializeField] private float JumpForce = 5.0f;
     [SerializeField] private float JumpForce_down = -5.0f;
 
-    [Header("Dash_Settings")]
-    //--Dash settings--//
-    private float DashForce = 100.0f;
+    [Header("Dash Settings")]
+    [SerializeField] private float DashForce = 30.0f;
+    [SerializeField] private float DashDuration = 0.2f;
 
-    private float Dash_Event_Timer = 0f;
-    private float Dash_EventEnd_Timer = 0.1f;
-    public GameObject player;
-
-
-    [Header("CameraSTuff")]
-    private Camera Playercam;
+    [Header("Camera Stuff")]
+    [SerializeField] private Camera Playercam;
     protected Vector2 LookVector;
-    private float LookSensitivity = 0.5f;
+    [SerializeField] private float LookSensitivity = 0.5f;
     private float CamX;
     private float CamY;
     private float VerticleRotation;
@@ -65,37 +50,36 @@ public class Player_Controller_Child : MonoBehaviour
     private float Fov_Max = 90;
     private float Fov_Min = 80;
 
-    //to track controller.isgroudned
+    [Header("Status")]
     [SerializeField] private bool isGround_bool;
-    [Header("Coroutine related")]
 
+    [Header("Coroutine Related")]
     public Coroutine Mobility_coro;
     #endregion
-    [SerializeField] private bool isDashing_Stop;
-    public float FOV_motion = 0.0f;
+
     #region RUNTIME
     public void Awake()
     {
         controller = GetComponent<CharacterController>();
-        Cursor.visible = true;
+        Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
 
         if (Playercam == null)
         {
             Playercam = Camera.main;
         }
     }
+
     public void Update()
     {
-        if (isDashing == true)
-        {
-            Mobility_coro = StartCoroutine(Dash_Logic());
-        }
         isGround_bool = controller.isGrounded;
         MoveLogic();
         CameraLogic();
-        shoot_script_ref.ShootingLogic();
+
+        if (shoot_script_ref != null)
+        {
+            shoot_script_ref.ShootingLogic();
+        }
     }
     #endregion
 
@@ -103,172 +87,139 @@ public class Player_Controller_Child : MonoBehaviour
     public void Movement(InputAction.CallbackContext context)
     {
         Movement_Vector = context.ReadValue<Vector2>();
-
     }
+
     public void Sprint(InputAction.CallbackContext context)
     {
         isSprinting = context.ReadValueAsButton();
     }
+
     public void PlayerLook(InputAction.CallbackContext context)
     {
         LookVector = context.ReadValue<Vector2>();
     }
+
     public void Shooting(InputAction.CallbackContext context)
     {
-        shoot_script_ref.isShooting = context.ReadValueAsButton();
+        if (shoot_script_ref != null)
+        {
+            shoot_script_ref.isShooting = context.ReadValueAsButton();
+        }
     }
+
     public void Jump(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (context.performed && Mobility_coro == null)
         {
             Mobility_coro = StartCoroutine(JumpLogic());
         }
     }
+
     public void Dash(InputAction.CallbackContext context)
     {
-        if (context.performed && Mobility_coro == null)
+        // Only dash if button is pressed and we aren't currently locked in another move action
+        if (context.performed && !isDashing && Mobility_coro == null)
         {
             Dash_Dir = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
+            if (Dash_Dir == Vector3.zero) Dash_Dir = transform.forward; // Fallback if stationary
 
-            isDashing = true;
-            Debug.Log("Dash conetxt");
+            Mobility_coro = StartCoroutine(Dash_Logic());
         }
-
     }
     #endregion
 
     #region LOGIC
     public void MoveLogic()
     {
+        // Don't process standard movement input overrides while dashing
+        if (isDashing) return;
 
         motion_Direction = Movement_Vector.x * transform.right + Movement_Vector.y * transform.forward;
 
         if (controller.isGrounded == true && Player_vert.y < 0 && isJumping == false)
         {
             Player_vert.y = DownForce;
-
         }
         else if (controller.isGrounded == false && isJumping == false)
         {
-            Player_vert.y += Physics.gravity.y * Time.deltaTime; //physics epic yeye
+            Player_vert.y += Physics.gravity.y * Time.deltaTime;
         }
+
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
-
 
         SprintLogic(isSprinting);
     }
 
-    public void SprintLogic(bool isSprinting)
+    public void SprintLogic(bool sprinting)
     {
-        if (isSprinting)
+        if (sprinting)
         {
             MoveSpeed = SprintSpeed;
-            Playercam.fieldOfView = Fov_Max;
+            if (Playercam != null) Playercam.fieldOfView = Fov_Max;
         }
-        else if (!isSprinting)
+        else
         {
             MoveSpeed = SpeedReset;
-            Playercam.fieldOfView = Fov_Min;
+            if (Playercam != null) Playercam.fieldOfView = Fov_Min;
         }
     }
-
 
     public IEnumerator JumpLogic()
     {
-        if (Mobility_coro == null && controller.isGrounded == true)
+        if (controller.isGrounded == true)
         {
-            Debug.Log("TO TEH SKIEEE");
+            isJumping = true;
             Player_vert.y = JumpForce;
-            yield return new WaitForSeconds(0.5f);
-            Player_vert.y = JumpForce_down;
+
+            // Wait until player starts falling or leaves ground
+            yield return new WaitForSeconds(0.1f);
             yield return new WaitUntil(() => controller.isGrounded == true);
+
+            isJumping = false;
+            Mobility_coro = null;
+        }
+        else
+        {
             Mobility_coro = null;
         }
     }
+
     public IEnumerator Dash_Logic()
     {
+        isDashing = true;
         DashMotion = DashForce * Dash_Dir;
-        if (isDashing && Mobility_coro == null)
+        float timer = 0f;
+
+        if (Playercam != null) Playercam.fieldOfView = Fov_Max;
+
+        while (timer < DashDuration)
         {
-            if (Dash_Event_Timer < Dash_EventEnd_Timer)
-            {
-                Playercam.fieldOfView = Fov_Max;
-                controller.Move(DashMotion * Time.deltaTime);
-                Dash_Event_Timer += Time.deltaTime;
-                Debug.Log("Dashhhh");
-            }
-            else if (Dash_Event_Timer >= Dash_EventEnd_Timer)
-            {
-                Playercam.fieldOfView = 80;
-                Dash_Event_Timer = 0.0f;
-                isDashing = false;
-            }
-            yield return new WaitUntil(() => !isDashing);
+            controller.Move(DashMotion * Time.deltaTime);
+            timer += Time.deltaTime;
+            yield return null;
         }
+
+        if (Playercam != null) Playercam.fieldOfView = Fov_Min;
+        isDashing = false;
         Mobility_coro = null;
     }
     #endregion
+
     #region CAMERA STUFF
     public void CameraLogic()
     {
+        if (Playercam == null) return;
+
         CamX = LookVector.x * LookSensitivity;
         CamY = LookVector.y * LookSensitivity;
-        VerticleRotation = Mathf.Clamp(VerticleRotation, -90, 90);
+
         VerticleRotation -= CamY;
-        HorozontalRotation -= -CamX;
+        VerticleRotation = Mathf.Clamp(VerticleRotation, -90f, 90f);
+        HorozontalRotation += CamX;
 
         Playercam.transform.localRotation = Quaternion.Euler(VerticleRotation, 0, 0);
         transform.Rotate(Vector3.up * CamX);
-        Debug.Log("CameraLogicCalled");
     }
-
-
     #endregion
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///--------------ARCHIVE--------------------------/////////////
-/*
- *                      ---THE OLD JUMP LOGIC---
- *     public IEnumerator Jumpyjump()
-    {
-        while (isJumping == true && controller.isGrounded == true)
-        {
-            {
-                Debug.Log("jumpy jumpy");
-                Player_vert.y = JumpForce;
-                yield return new WaitForSeconds(1f);
-                Player_vert.y = JumpForce_down;
-            }
-            yield return null;
-            Mobility_coro = null;
-        }        
-    }
-Simplified afetr I figured out how context.started works
-
-
-                        ---THE OLD DASH LOGIC---
-   
-    public void DashCash()
-    {
-        if (isDashing)
-        {
-            Dash_Dir = new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-            DashMotion = DashForce * Dash_Dir;
-            if (Dash_Event_Timer < Dash_EventEnd_Timer)
-            {
-                controller.Move(DashMotion * Time.deltaTime);
-                Dash_Event_Timer += Time.deltaTime;
-
-            }
-            else if (Dash_Event_Timer >= Dash_EventEnd_Timer)
-            {
-                Dash_Event_Timer = 0.0f;
-                isDashing = false;
-            }
-         }
-    }
-
- */
-
