@@ -1,15 +1,18 @@
+
+
+
+
+
+
 using System.Collections;
 using UnityEngine;
 using TMPro;
 
 public class IntercomManager : MonoBehaviour
 {
-    [Header("625095_wwstudioswastaken_radio_static_01")]
-public AudioSource radioAudioSource;
-public AudioClip radioStaticClip;
-
-
-
+    [Header("Radio Static")]
+    public AudioSource radioAudioSource;
+    public AudioClip radioStaticClip;
 
     [Header("Intercom UI")]
     public GameObject intercomPanel;
@@ -59,6 +62,11 @@ public AudioClip radioStaticClip;
             audioSource.PlayOneShot(staticSound);
         }
 
+        if (radioAudioSource != null && radioStaticClip != null)
+        {
+            radioAudioSource.PlayOneShot(radioStaticClip);
+        }
+
         yield return new WaitForSeconds(messageDuration);
 
         if (intercomPanel != null)
@@ -68,21 +76,21 @@ public AudioClip radioStaticClip;
 
         currentMessage = null;
     }
+
     public void PlayRadioStatic()
-{
-    if (radioAudioSource != null && radioStaticClip != null)
     {
-        radioAudioSource.PlayOneShot(radioStaticClip);
-    }
-    else
-    {
-        Debug.LogWarning("Radio Audio Source or Static Clip is missing!");
+        if (radioAudioSource != null && radioStaticClip != null)
+        {
+            radioAudioSource.PlayOneShot(radioStaticClip);
+        }
+        else
+        {
+            Debug.LogWarning(
+                "Radio Audio Source or Static Clip is missing!"
+            );
+        }
     }
 }
-}
-
-
-
 
 
 
