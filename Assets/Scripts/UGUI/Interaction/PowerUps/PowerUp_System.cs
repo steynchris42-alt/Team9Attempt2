@@ -42,20 +42,19 @@ public class PowerUp_System : MonoBehaviour
 
     public void PowerUp_Purchase_() //Called in Interaction call back context. Script: 'PlayerCOntroller'
     {   
-      
         switch (KillTracker.iKills)
         {
-            case >= 30: //makes TYPE2 available
+            case >= 10: //makes TYPE3 available
                 isPowUp_Available_Type3 = true;
                 isPowUp_Available_Type2 = true;
                 isPowUp_Available_Type1 = true;
                 break;
-            case >= 20: //makes TYPE2 available
+            case >= 5: //makes TYPE2 available
                 isPowUp_Available_Type3 = false;
                 isPowUp_Available_Type2 = true;
                 isPowUp_Available_Type1 = true;
                 break;
-            case >= 10: //makes TYPE1 available
+            case >= 2: //makes TYPE1 available
                 isPowUp_Available_Type3 = false;  
                 isPowUp_Available_Type2 = false;
                 isPowUp_Available_Type1 = true;
@@ -89,12 +88,12 @@ public class PowerUp_System : MonoBehaviour
     }
     public IEnumerator Powerup_Purchase_Coro_Type1()
     {
-        PlayerController.iPowerUp_Type1 += 1;
+    PlayerController.iPowerUp_Type1 += 1; //INCREASE POWERUP COUNT
     PlayerController.PowerUp_UI_Type1.text = PlayerController.iPowerUp_Type1.ToString();
-    KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 10, 0, 100);
+    KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 2, 0, 100); //DEDUCT KILL CREDITS
    KillTracker.KillTracker_Counter.text = KillTracker.iKills.ToString();
-
-        if (KillTracker.iKills < 10)
+    
+        if (KillTracker.iKills < 2)
         {
             isPowUp_Available_Type1 = false;
         }
@@ -108,7 +107,6 @@ public class PowerUp_System : MonoBehaviour
     {
         if (isAvailable == true && LineOfSight.IsRayHit_PowerUp_Type2 && Purchase_Coro == null)
         {
-
             Purchase_Coro = StartCoroutine(Powerup_Purchase_Coro_Type2());
             Debug.Log("Powerup type2 Purchase SUCCEED!");
         }
@@ -121,10 +119,10 @@ public class PowerUp_System : MonoBehaviour
     {
         PlayerController.iPowerUp_Type2 += 1;
         PlayerController.PowerUp_UI_Type2.text = PlayerController.iPowerUp_Type2.ToString();
-        KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 20, 0, 100);
+        KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 5, 0, 100);
         KillTracker.KillTracker_Counter.text = KillTracker.iKills.ToString();
 
-        if (KillTracker.iKills < 20) //MAKES POWER UP UNAVAILABLE
+        if (KillTracker.iKills < 5) //MAKES POWER UP UNAVAILABLE
         {
             isPowUp_Available_Type2 = false;
         }
@@ -150,9 +148,9 @@ public class PowerUp_System : MonoBehaviour
     {
         PlayerController.iPowerUp_Type3 += 1;
         PlayerController.PowerUp_UI_Type3.text = PlayerController.iPowerUp_Type3.ToString();
-        KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 30, 0, 100);
+        KillTracker.iKills = Mathf.Clamp(KillTracker.iKills - 5, 0, 100);
         KillTracker.KillTracker_Counter.text = KillTracker.iKills.ToString();
-        if (KillTracker.iKills < 20) //MAKES POWER UP UNAVAILABLE
+        if (KillTracker.iKills < 5) //MAKES POWER UP UNAVAILABLE
         {
             isPowUp_Available_Type3 = false;
         }

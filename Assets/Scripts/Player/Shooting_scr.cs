@@ -7,12 +7,12 @@ public class Shooting : MonoBehaviour
     public bool isShooting; //CallBack context condition in PlayerControllerScript//
     public bool isRaycastHit;
     public Coroutine Shoot_Cor;
-
     public GameObject WhiteReticle;
     public GameObject RedReticle;
-
-    //External scripts
     public PlayerController playerController;
+
+    public AudioSource Shooting_Audio;
+
     //--Raycast Information--//
     [Header("RAYCAST RELATED")]
     public Transform Ray_Origin;
@@ -26,11 +26,10 @@ public class Shooting : MonoBehaviour
         isShooting = false;
         WhiteReticle.SetActive(true);
         RedReticle.SetActive(false);
-
+        
     }
     public void ShootingLogic()
     {
-  
         if (isShooting == true && Shoot_Cor == null)
         {
             Shoot_Cor = StartCoroutine(Shooting_Raycast_Coro());
@@ -69,15 +68,23 @@ public class Shooting : MonoBehaviour
 
     public IEnumerator Shooting_Raycast_Coro()
     {
+        //START SHOOIING EFFECTS HERE
+        playerController.Player_EnergyBullets_Type1.Play();
         playerController.MuzzleFlash_part.Play();
+        Shooting_Audio.Play();
         BulletEffect_Parent.SetActive(true);
         while (isShooting == true)
         {
            Shooting_Raycast();
             yield return new WaitForSeconds(0.1f);
-            playerController.MuzzleFlash_part.Stop();
         }
+        //STOP SHOOIING EFFECTS HERE
+        playerController.MuzzleFlash_part.Stop();
+        playerController.Player_EnergyBullets_Type1.Stop();
+        Shooting_Audio.Stop();
+        //RESET SHOOIING EFFECTS HERE
         playerController.MuzzleFlash_part.Clear();
+        playerController.Player_EnergyBullets_Type1.Clear();
         BulletEffect_Parent.SetActive(false);
         Shoot_Cor = null;
     }

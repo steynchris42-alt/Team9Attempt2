@@ -12,13 +12,13 @@ public class Enemy_parent_Class : MonoBehaviour
     protected float MoveSpeed_Slow;
 
     [Header("Health and respawn Settings")]
-   public int Max_health = 100;
+   public int Max_health = 50;
    public int Min_health = 1;
     public int Current_health;
 
     //Spawning related
-    [SerializeField] protected float RespawnTimer = 5.0f;
-    protected float RespawnTimer_reset = 5.0f;
+    [SerializeField] protected float RespawnTimer = 10.0f;
+    protected float RespawnTimer_reset = 10.0f;
 
     public static Action Kill_Event; //utilised in Kill tracker script
 
@@ -137,7 +137,7 @@ public class Enemy_parent_Class : MonoBehaviour
     }
     public virtual void TakeDamage()
     {
-        Current_health--;
+        Current_health-=10;
         particle.Play();
     }
     public void MoveToSpawn()

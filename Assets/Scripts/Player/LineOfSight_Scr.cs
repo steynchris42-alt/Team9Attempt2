@@ -58,7 +58,6 @@ public class LineOfSight_Scr : MonoBehaviour
     {
         Vector3 RayOrigin = Ray_Origin.position;
         Vector3 RayEnd = Ray_End.position;
-
         Vector3 RayDir = transform.forward;   //Direction of cast
 
         float RayDis = 100.0f;
@@ -75,7 +74,6 @@ public class LineOfSight_Scr : MonoBehaviour
                     RedReticle.SetActive(true);
                     Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.yellow);
                 }
-
             }
         }
         else
@@ -87,7 +85,7 @@ public class LineOfSight_Scr : MonoBehaviour
         if (isGrandRayHit == true && RayHit.distance <= 10.0f)
         {
           Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.green);
-            Debug.Log("HIT INTERACTABLE");
+          Debug.Log("HIT INTERACTABLE");
 
             if (RayHit.collider.GetComponent<Note_Tracker>()) //---Logic executes if the Raycast hits a NOTE--
             {
@@ -145,7 +143,6 @@ public class LineOfSight_Scr : MonoBehaviour
             isRayHit_Note = false;
 
         }
-
     }
     public void Show_InteractPrompt_Notes()
     {
@@ -169,13 +166,12 @@ public class LineOfSight_Scr : MonoBehaviour
         if (IsRayHit_PowerUp_Type1 == true)
         {
             EToInteract_UI_GameObject_PowerUps_Type1.SetActive(true);
-            Reticle_UI_GameObject.SetActive(false);
             isInteraction_Success_PowerUps_Type1 = true;
         }
         else
         {
             EToInteract_UI_GameObject_PowerUps_Type1.SetActive(false);
-            Reticle_UI_GameObject.SetActive(true);
+      
             isInteraction_Success_PowerUps_Type1 = false;
         }
     }
@@ -184,13 +180,11 @@ public class LineOfSight_Scr : MonoBehaviour
         if (IsRayHit_PowerUp_Type2 == true)
         {
             EToInteract_UI_GameObject_PowerUps_Type2.SetActive(true);
-            Reticle_UI_GameObject.SetActive(false);
             isInteraction_Success_PowerUps_Type2 = true;
         }
         else
         {
             EToInteract_UI_GameObject_PowerUps_Type2.SetActive(false);
-            Reticle_UI_GameObject.SetActive(true);
             isInteraction_Success_PowerUps_Type2 = false;
         }
     }
@@ -199,14 +193,12 @@ public class LineOfSight_Scr : MonoBehaviour
         if (IsRayHit_PowerUp_Type3 == true)
         {
             EToInteract_UI_GameObject_PowerUps_Type3.SetActive(true);
-            Reticle_UI_GameObject.SetActive(false);
-               isInteraction_Success_PowerUps_Type3 = true;
+            isInteraction_Success_PowerUps_Type3 = true;
 }
         else
         {
             EToInteract_UI_GameObject_PowerUps_Type3.SetActive(false);
-            Reticle_UI_GameObject.SetActive(true);
-          isInteraction_Success_PowerUps_Type3 = false;
+            isInteraction_Success_PowerUps_Type3 = false;
         }
     }
 }
