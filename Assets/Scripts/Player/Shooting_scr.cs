@@ -8,8 +8,11 @@ public class Shooting : MonoBehaviour
     public bool isRaycastHit;
     public Coroutine Shoot_Cor;
 
+    public GameObject WhiteReticle;
+    public GameObject RedReticle;
+
     //External scripts
-   public PlayerController playerController;
+    public PlayerController playerController;
     //--Raycast Information--//
     [Header("RAYCAST RELATED")]
     public Transform Ray_Origin;
@@ -18,13 +21,19 @@ public class Shooting : MonoBehaviour
     public RaycastHit ShootHit;
 
     public GameObject BulletEffect_Parent;
+    public void Awake()
+    {
+        isShooting = false;
+        WhiteReticle.SetActive(true);
+        RedReticle.SetActive(false);
+
+    }
     public void ShootingLogic()
     {
   
         if (isShooting == true && Shoot_Cor == null)
         {
             Shoot_Cor = StartCoroutine(Shooting_Raycast_Coro());
-
         }   
     }   
     public void Shooting_Raycast()
@@ -43,14 +52,17 @@ public class Shooting : MonoBehaviour
             Enemy_RegularType_Child EnemyReg = ShootHit.collider.GetComponent<Enemy_RegularType_Child>();
                if (EnemyReg != null)
                 {
-                    Debug.DrawRay(RayOrigin, RayDir, Color.crimson);
-                   //===== DEAL ONE DAMAGE TO ENEMY
+                    Debug.DrawRay(RayOrigin, RayDir, Color.red);
+                  //  WhiteReticle.SetActive(false);
+                   // RedReticle.SetActive(true);
                     Debug.Log("ENEMY SHOOT HIT");
                 EnemyReg.TakeDamage();
                 }
                 else  {
-                    Debug.DrawRay(RayOrigin, RayDir, Color.cyan);
-                    isRaycastHit = false;
+                    Debug.DrawRay(RayOrigin, RayDir, Color.green);
+               // WhiteReticle.SetActive(true);
+               // RedReticle.SetActive(false);
+                isRaycastHit = false;
                     return; }
             }
         }

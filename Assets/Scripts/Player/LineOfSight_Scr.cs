@@ -15,6 +15,9 @@ public class LineOfSight_Scr : MonoBehaviour
     public GameObject EToInteract_UI_GameObject_PowerUps_Type2;
     public GameObject EToInteract_UI_GameObject_PowerUps_Type3;
 
+    public Transform Ray_Origin;
+    public Transform Ray_End;
+
     public GameObject Reticle_UI_GameObject;
 
     [Header("Raycast results NOTES")]
@@ -36,7 +39,10 @@ public class LineOfSight_Scr : MonoBehaviour
     public RaycastHit RayHit;
     [HideInInspector]
     public PowerUp_System LineOfSight_PowerUp_Current;
- 
+
+    public GameObject WhiteReticle;
+    public GameObject RedReticle;
+
 
     public void Update()
     {
@@ -50,17 +56,42 @@ public class LineOfSight_Scr : MonoBehaviour
     }
     public void Interact_RayCast()
     {
-        float RayDis = 10.0f;
-        bool isInteractable_Hit = Physics.Raycast(transform.position, transform.forward, out RayHit, RayDis, interactable); //Casts a ray at Interactable Layer
+        Vector3 RayOrigin = Ray_Origin.position;
+        Vector3 RayEnd = Ray_End.position;
 
-        if (isInteractable_Hit == true)
+        Vector3 RayDir = transform.forward;   //Direction of cast
+
+        float RayDis = 100.0f;
+        bool isGrandRayHit = Physics.Raycast(RayOrigin, RayDir, out RayHit, RayDis, interactable + Enemy); //Casts a ray at Interactable Layer
+
+        if (isGrandRayHit && RayHit.distance <= 100.0f)
         {
-          //=====DRAW RAY HERE  Debug.DrawRay(transform.position, transform.forward * RayDis, Color.green);
+            if (RayHit.collider.GetComponent<Enemy_RegularType_Child>()) //====LOGIC FOR ENEMY HIT
+            {
+                Enemy_RegularType_Child EnemeyReg = RayHit.collider.GetComponent<Enemy_RegularType_Child>();
+                if (EnemeyReg != null)
+                {
+                    WhiteReticle.SetActive(false);
+                    RedReticle.SetActive(true);
+                    Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.yellow);
+                }
+
+            }
+        }
+        else
+        {
+            WhiteReticle.SetActive(true);
+            RedReticle.SetActive(false);
+        }
+
+        if (isGrandRayHit == true && RayHit.distance <= 10.0f)
+        {
+          Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.green);
             Debug.Log("HIT INTERACTABLE");
 
             if (RayHit.collider.GetComponent<Note_Tracker>()) //---Logic executes if the Raycast hits a NOTE--
             {
-              Note_Tracker Note_Tracker = RayHit.collider.GetComponent<Note_Tracker>();
+                Note_Tracker Note_Tracker = RayHit.collider.GetComponent<Note_Tracker>();
                 if (Note_Tracker != null)
                 {
                     Notes_Popup NotesUi = FindFirstObjectByType<Notes_Popup>();
@@ -70,19 +101,20 @@ public class LineOfSight_Scr : MonoBehaviour
                     LineOfSight_PowerUp_Current = null;
                 }
             }
+
             else if (RayHit.collider.GetComponent<PowerUp_Tracker>()) //---Logic executes if the Raycast hits A POWERUP--
             {
-               PowerUp_Tracker Powerup_tracker = RayHit.collider.GetComponent<PowerUp_Tracker>();
-                
+                PowerUp_Tracker Powerup_tracker = RayHit.collider.GetComponent<PowerUp_Tracker>();
+
                 if (Powerup_tracker != null)
                 {
                     LineOfSight_PowerUp_Current = RayHit.collider.GetComponent<PowerUp_System>();
                     switch (Powerup_tracker.PowerUp_Tracker_ID)
                     {
                         case 1: //--- POWER UP TYPE1 ID
-                     IsRayHit_PowerUp_Type1 = true;
-                     IsRayHit_PowerUp_Type2 = false;
-                     IsRayHit_PowerUp_Type3 = false;
+                            IsRayHit_PowerUp_Type1 = true;
+                            IsRayHit_PowerUp_Type2 = false;
+                            IsRayHit_PowerUp_Type3 = false;
                             Debug.Log("HIT Type1");
                             break;
                         case 2: //--- POWER UP TYPE2 ID
@@ -101,15 +133,17 @@ public class LineOfSight_Scr : MonoBehaviour
 
                 }
             }
+
         }
+
         else
         {
-          //====DRAW RAY HERE  Debug.DrawRay(transform.position, transform.forward * RayDis, Color.red);
+            Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.red);
             IsRayHit_PowerUp_Type1 = false;
             IsRayHit_PowerUp_Type2 = false;
             IsRayHit_PowerUp_Type3 = false;
             isRayHit_Note = false;
-           
+
         }
 
     }
@@ -128,6 +162,7 @@ public class LineOfSight_Scr : MonoBehaviour
             isShowing_InteractPrompt_Notes = false;
         }
     }
+
     //----Below Logic shows interaction prompt for each powerup type---
     public void Show_InteractPrompt_PowerUps_Type1()
     {
