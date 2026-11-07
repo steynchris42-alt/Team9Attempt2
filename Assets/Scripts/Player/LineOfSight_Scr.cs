@@ -21,20 +21,30 @@ public class LineOfSight_Scr : MonoBehaviour
     public GameObject Reticle_UI_GameObject;
 
     [Header("Raycast results NOTES")]
-    //---Raycast Results----//
+    //---Raycast NOTES Results----//
     public bool isRayHit_Note; //causes the E to interact prompt to apear for NOTES
     public bool isShowing_InteractPrompt_Notes; //Safeguard for Callback context
     public bool isInteraction_Success_Notes; //returns true in callback context (PLAYER CONTROLLER) if interact prompt is displaying
 
     [Header("Raycast results POWERUPS")]
-    //---Raycast Results POWERU{S----//
+    //---Raycast Results POWERUPS----//
     public bool IsRayHit_PowerUp_Type1;
     public bool IsRayHit_PowerUp_Type2;
     public bool IsRayHit_PowerUp_Type3;
+
     //----Conditions set in Player Controller---//
     public bool isInteraction_Success_PowerUps_Type1;
     public bool isInteraction_Success_PowerUps_Type2;
     public bool isInteraction_Success_PowerUps_Type3;
+
+    [Header("Raycast results DOME")]
+    //---Raycast Results DOME CONTROLS----//
+    public bool IsRayHit_DomeDoor_Button;
+    //----Conditions set in Player Controller---//
+    public bool isInteraction_Success_DomeDoor_Button;
+
+    [Header("Raycast results Powerups Interaction")]
+
 
     public RaycastHit RayHit;
     [HideInInspector]
@@ -43,15 +53,17 @@ public class LineOfSight_Scr : MonoBehaviour
     public GameObject WhiteReticle;
     public GameObject RedReticle;
 
-
     public void Update()
     {
         Interact_RayCast();
+        //SHows intewraction prompt fornotes
         Show_InteractPrompt_Notes();
-
+        //SHows interaction prompt for powerups
         Show_InteractPrompt_PowerUps_Type1();
         Show_InteractPrompt_PowerUps_Type2();
         Show_InteractPrompt_PowerUps_Type3();
+        //SHows interaction prompt for Dome
+        Show_InteractPrompt_DomeButton();
 
     }
     public void Interact_RayCast()
@@ -61,7 +73,7 @@ public class LineOfSight_Scr : MonoBehaviour
         Vector3 RayDir = transform.forward;   //Direction of cast
 
         float RayDis = 100.0f;
-        bool isGrandRayHit = Physics.Raycast(RayOrigin, RayDir, out RayHit, RayDis, interactable + Enemy); //Casts a ray at Interactable Layer
+        bool isGrandRayHit = Physics.Raycast(RayOrigin, RayDir, out RayHit, RayDis, interactable + Enemy); //Casts a ray at Interactable Layer AND eNEMY LAYER
 
         if (isGrandRayHit && RayHit.distance <= 100.0f)
         {
@@ -128,22 +140,32 @@ public class LineOfSight_Scr : MonoBehaviour
                             Debug.Log("HIT Type3");
                             break;
                     }
-
-                }
             }
-
         }
 
-        else
+        else if (RayHit.collider.GetComponent<Dome_Controller>()) //---Logic executes if the Raycast hits Dome Buttton--
         {
-            Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.red);
-            IsRayHit_PowerUp_Type1 = false;
-            IsRayHit_PowerUp_Type2 = false;
-            IsRayHit_PowerUp_Type3 = false;
-            isRayHit_Note = false;
+          Dome_Controller DomeController = RayHit.collider.GetComponent<Dome_Controller>();
+          if (DomeController != null)
+            {
+                    Debug.Log("hot dome buttON");
+             isInteraction_Success_DomeDoor_Button = true;
+            }
+          else { isInteraction_Success_DomeDoor_Button = false; }
+         }
+
+        else
+        Debug.DrawRay(RayOrigin, RayDir * RayDis, Color.red);
+        IsRayHit_PowerUp_Type1 = false;
+        IsRayHit_PowerUp_Type2 = false;
+        IsRayHit_PowerUp_Type3 = false;
+        isRayHit_Note = false;
+        isInteraction_Success_DomeDoor_Button = false;
 
         }
     }
+    #region LOGIC FOR INTERACTION POPUPS
+    //-interaction logic for NOTES-//
     public void Show_InteractPrompt_Notes()
     {
         if (isRayHit_Note == true)
@@ -160,7 +182,7 @@ public class LineOfSight_Scr : MonoBehaviour
         }
     }
 
-    //----Below Logic shows interaction prompt for each powerup type---
+    //-interaction logic for POWERUPS-//
     public void Show_InteractPrompt_PowerUps_Type1()
     {
         if (IsRayHit_PowerUp_Type1 == true)
@@ -171,7 +193,6 @@ public class LineOfSight_Scr : MonoBehaviour
         else
         {
             EToInteract_UI_GameObject_PowerUps_Type1.SetActive(false);
-      
             isInteraction_Success_PowerUps_Type1 = false;
         }
     }
@@ -201,4 +222,22 @@ public class LineOfSight_Scr : MonoBehaviour
             isInteraction_Success_PowerUps_Type3 = false;
         }
     }
+
+    //-interaction logic for DOME STUFF-//
+    public void Show_InteractPrompt_DomeButton()
+    {
+
+        if (IsRayHit_DomeDoor_Button == true)
+        {
+            EToInteract_UI_GameObject_PowerUps_Type3.SetActive(true);
+            isInteraction_Success_DomeDoor_Button = true;
+        }
+        else
+        {
+            EToInteract_UI_GameObject_PowerUps_Type3.SetActive(false);
+            isInteraction_Success_DomeDoor_Button = true;
+        }
+    }
+
+    #endregion
 }

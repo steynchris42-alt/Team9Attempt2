@@ -125,6 +125,7 @@ public class PlayerController : MonoBehaviour
     //---LINKS TO OTHER SCRIPS---/
     public LineOfSight_Scr LineOfSight_scr;
     public PlayerHealth Helath_Scr;
+    public Dome_Controller Dome_Controller_Scr;
 
     #endregion
 
@@ -216,7 +217,7 @@ public class PlayerController : MonoBehaviour
 
     }
     public void Interaction(InputAction.CallbackContext context)
-    {  
+    {
         isInteracting = context.ReadValueAsButton();
         if (context.performed)
         {
@@ -224,13 +225,11 @@ public class PlayerController : MonoBehaviour
             if (LineOfSight_scr.isShowing_InteractPrompt_Notes) //condition for NOTES INTERACT PROMPT
             {
                 LineOfSight_scr.isInteraction_Success_Notes = true; //enables NOTES
-
             }
             else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type1) //condition for POWERUPS INTERACT PROMPT TYPE1
             {
-               LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
-               LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
-                
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
             }
             else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type2) //condition for POWERUPS INTERACT PROMPT TYPE2
             {
@@ -242,8 +241,24 @@ public class PlayerController : MonoBehaviour
                 LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
                 LineOfSight_scr.isInteraction_Success_PowerUps_Type3 = true;
             }
-        }  
+            else if (LineOfSight_scr.isInteraction_Success_DomeDoor_Button) //condition for DOME BUTTON INTERACTION prompt
+            {
+                Dome_Controller_Scr.IsDomeCoro = true; // ACtivates DOME corooutine in Dome_Controlle 
+            }
+        }
     }
+               /* if (Dome_Controller_Scr.IsDomeDoorActive)
+                {
+
+                    Dome_Controller_Scr.IsDomeDoorActive = false;
+                }
+                else
+                {
+                    Dome_Controller_Scr.IsDomeDoorActive = true;
+                } */
+           
+       
+    
      public void PowerUp_Type1(InputAction.CallbackContext context)
     {
         if (context.performed && iPowerUp_Type1 >= 1)

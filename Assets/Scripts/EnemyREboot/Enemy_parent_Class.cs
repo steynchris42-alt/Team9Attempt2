@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-
+using UnityEngine.UI;
 public class Enemy_parent_Class : MonoBehaviour
 {
     [Header("Movement settings")]
@@ -15,7 +15,7 @@ public class Enemy_parent_Class : MonoBehaviour
    public int Max_health = 50;
    public int Min_health = 1;
     public int Current_health;
-
+    public Slider Enemy_HealthBar;
     //Spawning related
     [SerializeField] protected float RespawnTimer = 10.0f;
     protected float RespawnTimer_reset = 10.0f;
@@ -61,9 +61,6 @@ public class Enemy_parent_Class : MonoBehaviour
     //--Silent reference
     public Enemy_parent_Class Enemy_Parent;
     
-        
-    
-
     public void Awake()
     {
         if (!MeshRen || !collider || !agent || !Enemy_Reg || !particle)
@@ -91,10 +88,10 @@ public class Enemy_parent_Class : MonoBehaviour
     }
     #endregion
     #region Life to death cycle
-    protected virtual void HealthTracker()
+    protected virtual void HealthTracker() //---Determines when the enemy should die--//
     { 
-        Mathf.Clamp(Current_health, Min_health, Max_health);
-        if (Current_health <= Min_health)
+        Mathf.Clamp(Enemy_HealthBar.value, Enemy_HealthBar.minValue, Enemy_HealthBar.maxValue);
+        if (Enemy_HealthBar.value <= Enemy_HealthBar.minValue)
         {
             Die();
             StartCoroutine(CircleOFLife());
@@ -109,9 +106,9 @@ public class Enemy_parent_Class : MonoBehaviour
 
         Kill_Event.Invoke(); //TRIGGERS KILL TRACKER UPDATE
     }
-    protected IEnumerator CircleOFLife()
+    protected IEnumerator CircleOFLife() //--- CONTROLS THE WHOLE LIFE DEATH CYCLE.
     {
-     {
+     
        while (IsDead)
          {
           yield return null;
@@ -124,7 +121,7 @@ public class Enemy_parent_Class : MonoBehaviour
      
            MoveToSpawn();
            yield return new WaitForSeconds(5);
-                Current_health = Max_health;
+                Enemy_HealthBar.value = Enemy_HealthBar.maxValue;
                 MeshRen.enabled = true;
            collider.enabled = true;
            IsDead = false;
@@ -133,11 +130,11 @@ public class Enemy_parent_Class : MonoBehaviour
           Respawning = null;
             }
             yield return null;
-        }
+        
     }
     public virtual void TakeDamage()
     {
-        Current_health-=10;
+        Mathf.Clamp(Enemy_HealthBar.value -= 5, Enemy_HealthBar.minValue, Enemy_HealthBar.maxValue);
         particle.Play();
     }
     public void MoveToSpawn()
@@ -149,7 +146,7 @@ public class Enemy_parent_Class : MonoBehaviour
             IsAtSpawn = true;
         }
     }
-    protected virtual void Spawn()
+   /* protected virtual void Spawn() 
     {
         if (Enemy_Reg.gameObject.activeInHierarchy == false)
         {
@@ -158,9 +155,9 @@ public class Enemy_parent_Class : MonoBehaviour
         if (RespawnTimer <= 0)
         {
             RespawnTimer = RespawnTimer_reset;
-            Current_health = Max_health; 
+            Enemy_HealthBar.value = Enemy_HealthBar.maxValue;
         }
-    }
+    }*/
     #endregion
     #region Movement Logic
     #endregion
