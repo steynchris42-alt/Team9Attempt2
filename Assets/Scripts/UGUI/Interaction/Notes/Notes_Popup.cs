@@ -36,9 +36,6 @@ public class Notes_Popup : MonoBehaviour
     public void Start()
     {
         Notes_Close_Button.onClick.AddListener(Hide_Notes);
-
- 
-     
     }
     public void Update()
     {

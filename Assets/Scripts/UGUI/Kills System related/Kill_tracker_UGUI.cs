@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 public class Kill_tracker_UGUI : MonoBehaviour
@@ -17,7 +18,6 @@ public class Kill_tracker_UGUI : MonoBehaviour
     public bool isKill = false;
     private Coroutine Kill_Coro;
 
-   
     public void OnEnable()
     {
         Enemy_parent_Class.Kill_Event += IncreaseCount;
@@ -28,9 +28,13 @@ public class Kill_tracker_UGUI : MonoBehaviour
     }
     public void IncreaseCount()
     {
-        iKills = Mathf.Clamp(iKills + 1, 0, 100);
+        iKills = Mathf.Clamp(iKills + 1, 0, 51);
         KillTracker_Counter.text = iKills.ToString();
-        if (Kill_Coro == null)
+        if (iKills >= 50)
+        {
+            SceneManager.LoadScene("Victory_proto3_Scene");
+        }
+        else if (iKills < 50 && Kill_Coro == null)
         {
             Kill_Coro = StartCoroutine(KillTrackerEffect());
         }

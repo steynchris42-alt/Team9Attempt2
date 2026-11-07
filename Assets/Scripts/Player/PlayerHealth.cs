@@ -10,9 +10,9 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private int iCurrentHealth = 100;
 
     public Slider HealthSlider;
-    private void HealthGain()
+    public void HealthGain()
     {
-        iCurrentHealth++;
+        Mathf.Clamp(HealthSlider.value+=20, iHealthMin, iHealthMax);
     }
     public void TakeDamage()
     {
@@ -21,16 +21,11 @@ public class PlayerHealth : MonoBehaviour
         {
             Die();
         }
-       /* iCurrentHealth--;
-        if (iCurrentHealth <= iHealthMin)
-        {
-            Die();
-        } */
     }
     public void Die()
     {
         Debug.Log("MAN IM DEAD");
-        SceneManager.LoadScene("Death");
+        SceneManager.LoadScene("Death_proto3_Scene");
     }
     public void OnCollisionEnter(Collision collision)
     {

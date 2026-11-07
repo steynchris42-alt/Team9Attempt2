@@ -5,7 +5,6 @@ using TMPro;
 using Unity.Cinemachine;
 using Unity.Mathematics;
 using Unity.VisualScripting;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -35,6 +34,8 @@ public class PlayerController : MonoBehaviour
     public GameObject Sprinting_Overlay_obj;
 
     public Coroutine PowerUp_Type1_Coro;
+    public Coroutine PowerUp_Type2_Coro;
+
     public bool isSpeedBoost;
     public bool IsOverlayEmpty;
     //raycast//
@@ -78,8 +79,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jump_Settings")]
     //--Jump settings--//
-    private float JumpForce = 1.0f;
-    [SerializeField] private float JumpHeight = 1.0f;
+    private float JumpForce = 1.3f;
+    [SerializeField] private float JumpHeight = 2f;
     private float JumpForce_down = -10.0f;
 
     [Header("Dash_Settings")]
@@ -88,7 +89,7 @@ public class PlayerController : MonoBehaviour
 
     private float Dash_Event_Timer = 0f;
     private float Dash_EventEnd_Timer = 0.1f;
-    public GameObject player;
+
 
     [Header("CameraSTuff")]
     // public Camera Playercam;
@@ -105,11 +106,13 @@ public class PlayerController : MonoBehaviour
  
     //---Coroutines---//
     public Coroutine Mobility_coro;
+    public Coroutine JumpCoror;
     public Coroutine Mobility_coro_two;
     public Coroutine Camera_Shake_Coro;
 
     //---Particle effect related--//
     public ParticleSystem MuzzleFlash_part; //enabled in shooting script
+    public ParticleSystem Player_EnergyBullets_Type1;
 
     [SerializeField] private bool isDashing_Stop;
     public float FOV_motion = 0.0f;
@@ -119,8 +122,10 @@ public class PlayerController : MonoBehaviour
     float Sine_Mag = 0.5f; //controls magnitude of the sine wave
 
     [Header("OTHER SCRIPTS")]
- 
+    //---LINKS TO OTHER SCRIPS---/
     public LineOfSight_Scr LineOfSight_scr;
+    public PlayerHealth Helath_Scr;
+    public Dome_Controller Dome_Controller_Scr;
 
     #endregion
 
@@ -134,6 +139,7 @@ public class PlayerController : MonoBehaviour
         if (Cin_cam == null) TryGetComponent(out Cin_cam);
         if (controller == null) TryGetComponent(out controller);
         if (MuzzleFlash_part == null) GetComponentInChildren<ParticleSystem>();
+        if (Player_EnergyBullets_Type1 == null) GetComponentInChildren<ParticleSystem>();
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
@@ -195,7 +201,7 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed)
         {
-            Mobility_coro = StartCoroutine(JumpLogic());
+            JumpCoror = StartCoroutine(JumpLogic());
         }
     }
     public void Dash(InputAction.CallbackContext context)
@@ -211,7 +217,7 @@ public class PlayerController : MonoBehaviour
 
     }
     public void Interaction(InputAction.CallbackContext context)
-    {  
+    {
         isInteracting = context.ReadValueAsButton();
         if (context.performed)
         {
@@ -219,13 +225,11 @@ public class PlayerController : MonoBehaviour
             if (LineOfSight_scr.isShowing_InteractPrompt_Notes) //condition for NOTES INTERACT PROMPT
             {
                 LineOfSight_scr.isInteraction_Success_Notes = true; //enables NOTES
-
             }
             else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type1) //condition for POWERUPS INTERACT PROMPT TYPE1
             {
-               LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
-               LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
-                
+                LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
+                LineOfSight_scr.isInteraction_Success_PowerUps_Type1 = true;
             }
             else if (LineOfSight_scr.isInteraction_Success_PowerUps_Type2) //condition for POWERUPS INTERACT PROMPT TYPE2
             {
@@ -237,8 +241,24 @@ public class PlayerController : MonoBehaviour
                 LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_Purchase_(); //enables POWERUPS if the player has enough kills
                 LineOfSight_scr.isInteraction_Success_PowerUps_Type3 = true;
             }
-        }  
+            else if (LineOfSight_scr.isInteraction_Success_DomeDoor_Button) //condition for DOME BUTTON INTERACTION prompt
+            {
+                Dome_Controller_Scr.IsDomeCoro = true; // ACtivates DOME corooutine in Dome_Controlle 
+            }
+        }
     }
+               /* if (Dome_Controller_Scr.IsDomeDoorActive)
+                {
+
+                    Dome_Controller_Scr.IsDomeDoorActive = false;
+                }
+                else
+                {
+                    Dome_Controller_Scr.IsDomeDoorActive = true;
+                } */
+           
+       
+    
      public void PowerUp_Type1(InputAction.CallbackContext context)
     {
         if (context.performed && iPowerUp_Type1 >= 1)
@@ -261,13 +281,15 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed && iPowerUp_Type2 >= 1)
         {
-            Debug.Log("Powerup type 1 USED");
+            Debug.Log("Powerup type 2 USED");
            iPowerUp_Type2 -= 1;
             PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
+            Helath_Scr.HealthGain(); //==INCREEASES HEALTH BY 20
             //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
         }
         else if (context.performed && iPowerUp_Type2 < 1)
         {
+            
             Debug.Log("Cannot use PowerUp TYPE!");
 
         }
@@ -327,8 +349,8 @@ public class PlayerController : MonoBehaviour
             //above two lines reset the the sprinting cooldown in UPDATE
             TimerStart += Time.deltaTime;
             SliderTime += Time.deltaTime; // increases values over real seconds.
-                                          // 
-            Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.minValue, 3 * Time.deltaTime); //Decreases teh sprint value at a fixed time
+                                          
+            Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.minValue, 2 * Time.deltaTime); //DECREASES SPRINT value at a fixed time
             Cin_cam.Lens.FieldOfView = Fov_Max;
             yield return null;
 
@@ -345,15 +367,15 @@ public class PlayerController : MonoBehaviour
     }
     public IEnumerator JumpLogic()
     {
-        if (Mobility_coro == null && IsRayGRound == true)
+        if (JumpCoror == null && IsRayGRound == true)
         {
             Debug.Log("TO TEH SKIEEE");
             Player_vert.y =(JumpForce + JumpHeight) * 2 ;
-            yield return new WaitForSeconds(0.2f) ;
+            yield return new WaitForSeconds(0.4f) ;
             Player_vert.y = JumpForce_down;
            // Player_vert.y = Mathf.Sin(JumpForce_down * 8  *Time.time);
             yield return new WaitUntil(() => IsRayGRound == true);
-            Mobility_coro = null;
+            JumpCoror = null;
         }
     }
     public void GroundCheack()
@@ -427,6 +449,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Recharging sprint");
        }
     }
+
                 //=== POWER UPS LOGIC ===//
     public IEnumerator PowerUp_SpeedBoost()
     {
@@ -454,6 +477,7 @@ public class PlayerController : MonoBehaviour
         PowerUp_Type1_Coro = null;
  
     }
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
