@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     private float Sprint_Duration;
     public bool isSprintRecharging;
 
-    
+
     [Header("POWER UPS ANND EFFECTS")]
     //----------POWER UPS RELATES----------// 
     public int iPowerUp_Type1;
@@ -46,17 +46,17 @@ public class PlayerController : MonoBehaviour
     [Header("MovementRelated")]
     [SerializeField] private CharacterController controller;
     //Input actions contexts
-    [SerializeField] private bool isSprinting; //returns true based on the timer in 'sprinty' Ienumerator
+    public bool isSprinting; //returns true based on the timer in 'sprinty' Ienumerator
     [SerializeField] private bool isStopSprinting;
     [SerializeField] private bool isJumping;
     [SerializeField] private bool isDashing;
     [SerializeField] private bool isInteracting;
     [SerializeField] private bool IsUsing_PowerUp_Type1;
+    public bool isStabbing;
 
 
 
     public bool isAbleToInteract;//Set in "Interactable_new" script
-
     public bool isMoving;
     public Shooting shoot_script_ref;
 
@@ -103,12 +103,13 @@ public class PlayerController : MonoBehaviour
     //to track controller.isgroudned
     [SerializeField] private bool isGround_bool;
     public bool IsRayGRound;
- 
+
     //---Coroutines---//
     public Coroutine Mobility_coro;
     public Coroutine JumpCoror;
     public Coroutine Mobility_coro_two;
     public Coroutine Camera_Shake_Coro;
+    public Coroutine Stabbing_Coro;
 
     //---Particle effect related--//
     public ParticleSystem MuzzleFlash_part; //enabled in shooting script
@@ -126,7 +127,10 @@ public class PlayerController : MonoBehaviour
     public LineOfSight_Scr LineOfSight_scr;
     public PlayerHealth Helath_Scr;
     public Dome_Controller Dome_Controller_Scr;
+    public Player_AnimatorController Anim_Scr;
 
+    private Collider SwordCollider;
+    public GameObject Sword_Collider_Obj;
     #endregion
 
     #region RUNTIME
@@ -140,6 +144,7 @@ public class PlayerController : MonoBehaviour
         if (controller == null) TryGetComponent(out controller);
         if (MuzzleFlash_part == null) GetComponentInChildren<ParticleSystem>();
         if (Player_EnergyBullets_Type1 == null) GetComponentInChildren<ParticleSystem>();
+        if (SwordCollider  == null) GetComponentInChildren<Collider>();
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Locked;
@@ -152,6 +157,7 @@ public class PlayerController : MonoBehaviour
         MoveLogic();
         shoot_script_ref.ShootingLogic();
         SprintCoolDown();  //Activates the cooldown for sprinting when the stamina bar is drained 
+    
     }
     public void LateUpdate()
     {
@@ -197,6 +203,17 @@ public class PlayerController : MonoBehaviour
     {
         shoot_script_ref.isShooting = context.ReadValueAsButton();
     }
+    public void Stabbing(InputAction.CallbackContext context)
+    {
+        if (context.performed && Stabbing_Coro == null)
+        {
+           // Sword_Collider_Obj.SetActive(true);
+            isStabbing = true;
+            Stabbing_Coro = StartCoroutine(Stabbing_Logic());
+        }
+
+    }
+
     public void Jump(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -247,23 +264,12 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-               /* if (Dome_Controller_Scr.IsDomeDoorActive)
-                {
 
-                    Dome_Controller_Scr.IsDomeDoorActive = false;
-                }
-                else
-                {
-                    Dome_Controller_Scr.IsDomeDoorActive = true;
-                } */
-           
-       
-    
-     public void PowerUp_Type1(InputAction.CallbackContext context)
+    public void PowerUp_Type1(InputAction.CallbackContext context)
     {
         if (context.performed && iPowerUp_Type1 >= 1)
         {
-            Debug.Log("Powerup type 1 USED");            
+            Debug.Log("Powerup type 1 USED");
             isSpeedBoost = true;
             if (isSpeedBoost && PowerUp_Type1_Coro == null)
             {
@@ -282,14 +288,14 @@ public class PlayerController : MonoBehaviour
         if (context.performed && iPowerUp_Type2 >= 1)
         {
             Debug.Log("Powerup type 2 USED");
-           iPowerUp_Type2 -= 1;
+            iPowerUp_Type2 -= 1;
             PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
             Helath_Scr.HealthGain(); //==INCREEASES HEALTH BY 20
             //LineOfSight_scr.LineOfSight_PowerUp_Current.PowerUp_UI_Type2.text = iPowerUp_Type2.ToString();
         }
         else if (context.performed && iPowerUp_Type2 < 1)
         {
-            
+
             Debug.Log("Cannot use PowerUp TYPE!");
 
         }
@@ -327,7 +333,6 @@ public class PlayerController : MonoBehaviour
         Move_Collab = (motion_Direction * MoveSpeed) + new Vector3(0, Player_vert.y, 0);
         controller.Move(Move_Collab * Time.deltaTime);
     }
-
     public IEnumerator Sprinty()
     {
         float SliderTime = 0;
@@ -344,12 +349,12 @@ public class PlayerController : MonoBehaviour
             {
                 Sprinting_Overlay_obj.SetActive(true);
             }
-            isSprintRecharging = false; 
+            isSprintRecharging = false;
             Sprint_Duration = 0;
             //above two lines reset the the sprinting cooldown in UPDATE
             TimerStart += Time.deltaTime;
             SliderTime += Time.deltaTime; // increases values over real seconds.
-                                          
+
             Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.minValue, 2 * Time.deltaTime); //DECREASES SPRINT value at a fixed time
             Cin_cam.Lens.FieldOfView = Fov_Max;
             yield return null;
@@ -370,10 +375,10 @@ public class PlayerController : MonoBehaviour
         if (JumpCoror == null && IsRayGRound == true)
         {
             Debug.Log("TO TEH SKIEEE");
-            Player_vert.y =(JumpForce + JumpHeight) * 2 ;
-            yield return new WaitForSeconds(0.4f) ;
+            Player_vert.y = (JumpForce + JumpHeight) * 2;
+            yield return new WaitForSeconds(0.4f);
             Player_vert.y = JumpForce_down;
-           // Player_vert.y = Mathf.Sin(JumpForce_down * 8  *Time.time);
+            // Player_vert.y = Mathf.Sin(JumpForce_down * 8  *Time.time);
             yield return new WaitUntil(() => IsRayGRound == true);
             JumpCoror = null;
         }
@@ -430,12 +435,12 @@ public class PlayerController : MonoBehaviour
     {
         while (isMoving && Cin_cam != null)
         {
-          Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
-          yield return null;
+            Cin_cam.Lens.Dutch = Mathf.Sin(Time.time * Sine_Speed) * Sine_Mag;
+            yield return null;
         }
         if (Cin_cam != null)
         {
-          Cin_cam.Lens.Dutch = 0.0f;
+            Cin_cam.Lens.Dutch = 0.0f;
         }
         Camera_Shake_Coro = null;
         #endregion
@@ -443,14 +448,14 @@ public class PlayerController : MonoBehaviour
 
     public void SprintCoolDown()
     {
-      if (isSprintRecharging == true)
-       {
-        Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.maxValue, 1f * Time.deltaTime);
+        if (isSprintRecharging == true)
+        {
+            Sprint_Slider.value = Mathf.MoveTowards(Sprint_Slider.value, Sprint_Slider.maxValue, 1f * Time.deltaTime);
             Debug.Log("Recharging sprint");
-       }
+        }
     }
 
-                //=== POWER UPS LOGIC ===//
+    //=== POWER UPS LOGIC ===//
     public IEnumerator PowerUp_SpeedBoost()
     {
         float TimerStart = 0;
@@ -475,9 +480,30 @@ public class PlayerController : MonoBehaviour
         Cin_cam.Lens.FieldOfView = Fov_Min;
         Sine_Speed = 5.0f;
         PowerUp_Type1_Coro = null;
- 
+
     }
-    
+
+    public IEnumerator Stabbing_Logic()
+    {
+        if (isStabbing)
+        {
+            Debug.Log("Stab!");
+            Anim_Scr.Player_Anim.SetBool("isStabbing_Anim", true);
+         
+         
+            //Anim_Scr.Player_Anim.SetTrigger("isStabbingTrig");
+            yield return null;
+            isStabbing = false;
+            yield return new WaitForSeconds(1.5f);
+
+            Anim_Scr.Player_Anim.SetBool("isStabbing_Anim", false);
+            //Sword_Collider_Obj.SetActive(false);
+            isStabbing = false;
+            Stabbing_Coro = null;
+            yield return null;
+        }
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

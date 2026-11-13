@@ -6,9 +6,18 @@ using Unity.VisualScripting;
 
 public class Enemy_RegularType_Child : Enemy_parent_Class
 {
-    public Transform Shank_base;
-  public Coroutine State_Tracker_Coro;
+    //--Overrides
+    private Coroutine State_Tracker_Ranger_Coro;
+   public override Coroutine State_Tracker_Coro  //overrides parent coroutine with child specific coroutine
+    {
+    get => State_Tracker_Ranger_Coro;
+    set => State_Tracker_Ranger_Coro = value;
+     }
+    //-- ANimation Related
+    [Header("Animation Related")]
+    public Animator Ranger_Anim;
 
+    public Transform Shank_base;
     public bool isAttacking;
     public Func<bool> IsAttackReady_Func;
     public bool IsAttackReady;
@@ -17,6 +26,8 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
     public Shooting PlayerShootScr;
     //Func bool setup for patrolling coroutine
     public Func<bool> is_Chasing_del;
+
+  
     public void Start()
     {
         base.Start();
@@ -28,12 +39,11 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         base.Update();
         shoot_scr.FirePoint.transform.LookAt(player.transform.position);
         Is_ShootingDistance_();
-       /* if (PlayerShootScr.isRaycastHit) //==== DECREASE HEALTH BY 1 IF SHOOTING RAYCAST LANDS
+        if (Ranger_Anim != null)
         {
-            Current_health -= 1;
-        }*/
-        //Assigning specific distances to bools.
-        //That way I can use them as conditions for action in my Ineumerators.
+            Ranger_Anim.SetBool("isFlying", isPatrolling || isChasing); //Enables FLYING animation when chansing and patrolling; 
+            Ranger_Anim.SetBool("isAttacking", isAttacking);
+        }
 
         shoot_scr.ShootingLogic();
         switch (Dis_to_Player)
@@ -45,54 +55,49 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
              isChasing = false; 
                 }
                 break;
-
             case <= 100.0f:
                 if (IsDead == false)
                 {
             isPatrolling = false;
-             isChasing = true;
-                    
-                 }
+            isChasing = true;
+
+                }
                  break;
             }
 
-
-        if (isPatrolling == true && State_Tracker_Coro == null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        if (isPatrolling == true && State_Tracker_Ranger_Coro == null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             Debug.Log("Should start patrolling");
-            State_Tracker_Coro = StartCoroutine(PatrollRouteLogic());
+            State_Tracker_Ranger_Coro = StartCoroutine(PatrollRouteLogic());
         }
         else
-           if (isChasing == true && State_Tracker_Coro == null)
+           if (isChasing == true && State_Tracker_Ranger_Coro == null)
         {
             Debug.Log("Should start chasing");
-            State_Tracker_Coro = StartCoroutine(ChasingLogic());
+            State_Tracker_Ranger_Coro = StartCoroutine(ChasingLogic());
         }
-        
-   
-      
     }
     private IEnumerator PatrollRouteLogic()
     {
-        Debug.Log("PATROLL");
-      
         while (isPatrolling == true  && IsDead == false && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
-            if (isChasing == true)
+            Debug.Log("RANGER PATROLL");
+          
             {
-            agent.ResetPath();
-            yield break;
+                if (isChasing)
+                {
+                    agent.ResetPath();
+                    yield break;
+                }
             }
             Patrollindex = UnityEngine.Random.Range(0, WayPoint_PatrollingRoute.Length);
             agent.SetDestination(WayPoint_PatrollingRoute[Patrollindex].position);
-
             yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
             && !agent.pathPending || isChasing);
-       
         }
         agent.ResetPath();
-        State_Tracker_Coro = null;
-        yield return new WaitForSeconds(1);
+        State_Tracker_Ranger_Coro = null;
+        yield return null;
     }
     private IEnumerator ChasingLogic()
     {
@@ -104,6 +109,8 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
         Debug.Log("CHASE");
         while (isChasing == true && isPatrolling == false && IsDead == false && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
+          //  Ranger_Anim.SetBool("isFlying", true); // starts FYLING animation
+          //  Ranger_Anim.SetBool("isIdle", false); // stops idle animation 
             agent.SetDestination(player.transform.position);
             yield return new WaitForSeconds(0.5f);
             if (Is_ShootingDistance_())
@@ -117,7 +124,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             }
         }
         agent.ResetPath();
-        State_Tracker_Coro = null;
+        State_Tracker_Ranger_Coro = null;
         yield return null;    
     }
 
@@ -190,7 +197,7 @@ public class Enemy_RegularType_Child : Enemy_parent_Class
             IsStateSwitch_Over = true;
         }
 
-        State_Tracker_Coro = null;
+        State_Tracker_Ranger_Coro = null;
         yield return null;
     }
 public override void TakeDamage()
