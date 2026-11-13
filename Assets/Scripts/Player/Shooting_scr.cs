@@ -48,23 +48,32 @@ public class Shooting : MonoBehaviour
         isRaycastHit = isShooting_Hit;
         if (isShooting_Hit)
         {
-            Enemy_RegularType_Child EnemyReg = ShootHit.collider.GetComponent<Enemy_RegularType_Child>();
-               if (EnemyReg != null)
+            Enemy_RegularType_Child EnemyReg = ShootHit.collider.GetComponent<Enemy_RegularType_Child>(); //ENEMY RANGER COMP
+            Enemy_HunterType_Child EnemyHunter = ShootHit.collider.GetComponent<Enemy_HunterType_Child>(); //ENEMY HUNTER COMP
+            if (EnemyReg != null )
                 {
-                    Debug.DrawRay(RayOrigin, RayDir, Color.red);
-                  //  WhiteReticle.SetActive(false);
-                   // RedReticle.SetActive(true);
-                    Debug.Log("ENEMY SHOOT HIT");
+                Debug.DrawRay(RayOrigin, RayDir, Color.red);
+                //WhiteReticle.SetActive(false);
+                //RedReticle.SetActive(true);
+                Debug.Log("ENEMY SHOOT HIT");
                 EnemyReg.TakeDamage();
                 }
-                else  {
-                    Debug.DrawRay(RayOrigin, RayDir, Color.green);
-               // WhiteReticle.SetActive(true);
-               // RedReticle.SetActive(false);
-                isRaycastHit = false;
-                    return; }
+            else if (EnemyHunter != null)
+            {
+                EnemyHunter.TakeDamage();
             }
+ 
+            }
+        else
+        {
+            Debug.DrawRay(RayOrigin, RayDir, Color.green);
+            // WhiteReticle.SetActive(true);
+            // RedReticle.SetActive(false);
+            isRaycastHit = false;
+            return;
         }
+
+    }
 
     public IEnumerator Shooting_Raycast_Coro()
     {

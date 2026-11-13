@@ -20,7 +20,7 @@
                     "name": "Look",
                     "type": "Value",
                     "id": "d6229e3b-b844-4d0c-beaa-3cff63abf39a",
-                    "expectedControlType": "Delta",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true,
@@ -100,6 +100,16 @@
                     "name": "Activate_PowerUp3",
                     "type": "Button",
                     "id": "c80432af-875b-47f5-b318-6e16c32fbacd",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Stab",
+                    "type": "Button",
+                    "id": "3b70fbfc-75a9-4aaa-a8b3-6e9c5a127d66",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -259,6 +269,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Activate_PowerUp3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3deeda0f-06a0-4792-b52f-7c83c01eb94d",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Stab",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

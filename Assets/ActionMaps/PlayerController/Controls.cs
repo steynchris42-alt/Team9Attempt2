@@ -106,7 +106,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""name"": ""Look"",
                     ""type"": ""Value"",
                     ""id"": ""d6229e3b-b844-4d0c-beaa-3cff63abf39a"",
-                    ""expectedControlType"": ""Delta"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true,
@@ -186,6 +186,16 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""name"": ""Activate_PowerUp3"",
                     ""type"": ""Button"",
                     ""id"": ""c80432af-875b-47f5-b318-6e16c32fbacd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Stab"",
+                    ""type"": ""Button"",
+                    ""id"": ""3b70fbfc-75a9-4aaa-a8b3-6e9c5a127d66"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -347,6 +357,17 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Activate_PowerUp3"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3deeda0f-06a0-4792-b52f-7c83c01eb94d"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Stab"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -365,6 +386,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_PlayerActions_Activate_PowerUp1 = m_PlayerActions.FindAction("Activate_PowerUp1", throwIfNotFound: true);
         m_PlayerActions_Activate_PowerUp2 = m_PlayerActions.FindAction("Activate_PowerUp2", throwIfNotFound: true);
         m_PlayerActions_Activate_PowerUp3 = m_PlayerActions.FindAction("Activate_PowerUp3", throwIfNotFound: true);
+        m_PlayerActions_Stab = m_PlayerActions.FindAction("Stab", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -455,6 +477,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerActions_Activate_PowerUp1;
     private readonly InputAction m_PlayerActions_Activate_PowerUp2;
     private readonly InputAction m_PlayerActions_Activate_PowerUp3;
+    private readonly InputAction m_PlayerActions_Stab;
     /// <summary>
     /// Provides access to input actions defined in input action map "PlayerActions".
     /// </summary>
@@ -506,6 +529,10 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "PlayerActions/Activate_PowerUp3".
         /// </summary>
         public InputAction @Activate_PowerUp3 => m_Wrapper.m_PlayerActions_Activate_PowerUp3;
+        /// <summary>
+        /// Provides access to the underlying input action "PlayerActions/Stab".
+        /// </summary>
+        public InputAction @Stab => m_Wrapper.m_PlayerActions_Stab;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -562,6 +589,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Activate_PowerUp3.started += instance.OnActivate_PowerUp3;
             @Activate_PowerUp3.performed += instance.OnActivate_PowerUp3;
             @Activate_PowerUp3.canceled += instance.OnActivate_PowerUp3;
+            @Stab.started += instance.OnStab;
+            @Stab.performed += instance.OnStab;
+            @Stab.canceled += instance.OnStab;
         }
 
         /// <summary>
@@ -603,6 +633,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Activate_PowerUp3.started -= instance.OnActivate_PowerUp3;
             @Activate_PowerUp3.performed -= instance.OnActivate_PowerUp3;
             @Activate_PowerUp3.canceled -= instance.OnActivate_PowerUp3;
+            @Stab.started -= instance.OnStab;
+            @Stab.performed -= instance.OnStab;
+            @Stab.canceled -= instance.OnStab;
         }
 
         /// <summary>
@@ -713,5 +746,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnActivate_PowerUp3(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Stab" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnStab(InputAction.CallbackContext context);
     }
 }
